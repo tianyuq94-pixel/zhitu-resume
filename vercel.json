@@ -1,0 +1,22 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "installCommand": "pnpm --dir frontend install --frozen-lockfile",
+  "buildCommand": "pnpm --dir frontend build",
+  "outputDirectory": "frontend/dist",
+  "functions": {
+    "api/index.py": {
+      "maxDuration": 120,
+      "regions": ["sin1"]
+    }
+  },
+  "rewrites": [
+    { "source": "/login", "destination": "/index.html" },
+    { "source": "/register", "destination": "/index.html" },
+    { "source": "/app", "destination": "/index.html" },
+    { "source": "/app/:path*", "destination": "/index.html" },
+    { "source": "/resumes", "destination": "/index.html" },
+    { "source": "/tailored-resumes", "destination": "/index.html" },
+    { "source": "/job-matching", "destination": "/index.html" },
+    { "source": "/interviews", "destination": "/index.html" }
+  ]
+}

@@ -76,6 +76,23 @@ def test_valid_production_settings_are_accepted() -> None:
     assert settings.app_env == "production"
 
 
+def test_production_accepts_complete_cloud_database_url_without_separate_password() -> None:
+    settings = Settings(
+        _env_file=None,
+        app_env="production",
+        auth_secret="test-production-secret-with-more-than-32-characters",
+        secure_cookies=True,
+        cors_origins=["https://zhitu-resume.vercel.app"],
+        allowed_hosts=["*.vercel.app"],
+        database_url="mysql://cloud-user:cloud-password@db.example.com:4000/ai_career",
+        deepseek_api_key="sk-real-test-key-for-settings-validation",
+    )
+
+    assert settings.sqlalchemy_database_url.drivername == "mysql+pymysql"
+    assert settings.sqlalchemy_database_url.host == "db.example.com"
+    assert settings.sqlalchemy_database_url.database == "ai_career"
+
+
 def test_production_application_hides_docs_and_enables_hsts(monkeypatch: pytest.MonkeyPatch) -> None:
     settings = Settings(
         _env_file=None,

@@ -17,6 +17,7 @@ V1.0 暂不包含付费模块、手机号验证码登录和求职记录。AI 能
 - `frontend/`：网站页面（Vue 3 + TypeScript + Vite）
 - `backend/`：后端服务（FastAPI + SQLAlchemy）
 - `storage/`：本地简历和生成文件，默认不会提交到 Git
+- `api/` 与 `vercel.json`：免费公开展示所需的 Vercel 入口和发布配置
 
 ## 当前已完成
 
@@ -98,4 +99,4 @@ DeepSeek 默认使用 `https://api.deepseek.com` 和 `deepseek-v4-flash`，接�
 
 PDF 导出会优先使用 `AI_CAREER_PDF_FONT_PATH` 指定的中文字体；Windows 本地开发会自动使用系统中文字体。Linux 部署时应配置可用的中文 TTF/TTC 字体路径。
 
-生产环境部署前请按 [DEPLOYMENT.md](DEPLOYMENT.md) 完成域名、HTTPS、安全环境变量、反向代理和备份配置。
+若只需最快公开展示，请按 [VERCEL_DEPLOYMENT.md](VERCEL_DEPLOYMENT.md) 使用 GitHub + Vercel + TiDB Cloud；无需购买服务器或域名。以后使用自有服务器和域名时，再按 [DEPLOYMENT.md](DEPLOYMENT.md) 完成 HTTPS、安全环境变量、反向代理和备份配置。

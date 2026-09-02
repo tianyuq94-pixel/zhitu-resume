@@ -1,5 +1,6 @@
 import secrets
 from typing import Annotated
+from urllib.parse import urlsplit
 
 from fastapi import Depends, HTTPException, Request, status
 from sqlalchemy import select
@@ -46,8 +47,19 @@ def require_csrf(request: Request) -> None:
 
 def require_trusted_origin(request: Request) -> None:
     origin = request.headers.get("origin")
-    if origin and origin not in set(get_settings().cors_origins):
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="请求来源不受信任")
+    if not origin or origin in set(get_settings().cors_origins):
+        return
+
+    parsed_origin = urlsplit(origin)
+    forwarded_proto = (
+        request.headers.get("x-forwarded-proto", request.url.scheme)
+        .split(",", maxsplit=1)[0]
+        .strip()
+    )
+    request_host = request.headers.get("host", "").strip()
+    if parsed_origin.scheme == forwarded_proto and parsed_origin.netloc == request_host:
+        return
+    raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="请求来源不受信任")
 
 
 def request_client_key(request: Request) -> str:

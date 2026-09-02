@@ -11,7 +11,7 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-database_url = get_settings().database_url.render_as_string(hide_password=False).replace("%", "%%")
+database_url = get_settings().sqlalchemy_database_url.render_as_string(hide_password=False).replace("%", "%%")
 config.set_main_option("sqlalchemy.url", database_url)
 target_metadata = Base.metadata
 
@@ -44,4 +44,3 @@ if context.is_offline_mode():
     run_migrations_offline()
 else:
     run_migrations_online()
-

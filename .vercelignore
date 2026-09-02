@@ -1,0 +1,8 @@
+.git
+.env
+.env.*
+backend/.venv
+backend/tests
+frontend/dist
+frontend/node_modules
+storage

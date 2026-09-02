@@ -1,9 +1,10 @@
 from functools import lru_cache
 from pathlib import Path
+from typing import Literal
 
 from pydantic import Field, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from sqlalchemy import URL
+from sqlalchemy import URL, make_url
 
 
 def default_storage_root() -> Path:
@@ -31,6 +32,7 @@ class Settings(BaseSettings):
     db_name: str = "ai_career"
     db_user: str = "ai_career"
     db_password: str = ""
+    database_url: SecretStr | None = None
 
     auth_secret: SecretStr = Field(min_length=32)
     auth_token_minutes: int = 60 * 24 * 7
@@ -39,6 +41,8 @@ class Settings(BaseSettings):
     secure_cookies: bool = False
 
     storage_root: Path = Field(default_factory=default_storage_root)
+    storage_backend: Literal["local", "vercel_blob"] = "local"
+    auto_create_schema: bool = False
     resume_max_bytes: int = 10 * 1024 * 1024
     resume_photo_max_bytes: int = 2 * 1024 * 1024
     resume_min_text_chars: int = 30
@@ -77,8 +81,13 @@ class Settings(BaseSettings):
         auth_secret = self.auth_secret.get_secret_value().strip()
         if auth_secret.casefold().startswith("replace-with"):
             raise ValueError("production requires a real AI_CAREER_AUTH_SECRET")
-        if not self.db_password.strip() or self.db_password.casefold().startswith("replace-with"):
-            raise ValueError("production requires a real AI_CAREER_DB_PASSWORD")
+        if self.database_url is None:
+            if not self.db_password.strip() or self.db_password.casefold().startswith("replace-with"):
+                raise ValueError("production requires AI_CAREER_DATABASE_URL or a real AI_CAREER_DB_PASSWORD")
+        else:
+            database_url = self.database_url.get_secret_value().strip()
+            if not database_url or database_url.casefold().startswith("replace-with"):
+                raise ValueError("production requires a real AI_CAREER_DATABASE_URL")
         if self.deepseek_api_key is None or not self.deepseek_api_key.get_secret_value().strip():
             raise ValueError("production requires AI_CAREER_DEEPSEEK_API_KEY")
         if self.deepseek_api_key.get_secret_value().strip().casefold().startswith("replace-with"):
@@ -86,7 +95,12 @@ class Settings(BaseSettings):
         return self
 
     @property
-    def database_url(self) -> URL:
+    def sqlalchemy_database_url(self) -> URL:
+        if self.database_url is not None:
+            url = make_url(self.database_url.get_secret_value().strip())
+            if url.drivername == "mysql":
+                url = url.set(drivername="mysql+pymysql")
+            return url
         return URL.create(
             drivername="mysql+pymysql",
             username=self.db_user,

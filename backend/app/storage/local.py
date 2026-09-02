@@ -48,6 +48,10 @@ class LocalResumeStorage:
 
 
 @lru_cache
-def get_resume_storage() -> LocalResumeStorage:
-    return LocalResumeStorage(get_settings().storage_root)
+def get_resume_storage():
+    settings = get_settings()
+    if settings.storage_backend == "vercel_blob":
+        from app.storage.vercel_blob import VercelBlobResumeStorage
 
+        return VercelBlobResumeStorage("resumes")
+    return LocalResumeStorage(settings.storage_root)

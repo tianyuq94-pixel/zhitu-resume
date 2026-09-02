@@ -21,6 +21,7 @@ dependencies = [
     "reportlab>=4.4,<5",
     "sqlalchemy>=2.0.52,<2.1",
     "uvicorn[standard]>=0.52,<0.53",
+    "vercel>=0.10,<1",
 ]
 
 [project.optional-dependencies]

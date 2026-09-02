@@ -69,7 +69,12 @@ async def upload_primary_resume(
     if not content:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="上传的文件为空")
     if len(content) > settings.resume_max_bytes:
-        raise HTTPException(status_code=status.HTTP_413_CONTENT_TOO_LARGE, detail="简历文件不能超过 10 MB")
+        max_megabytes = settings.resume_max_bytes / (1024 * 1024)
+        readable_limit = f"{max_megabytes:g}"
+        raise HTTPException(
+            status_code=status.HTTP_413_CONTENT_TOO_LARGE,
+            detail=f"简历文件不能超过 {readable_limit} MB",
+        )
 
     original_name = _safe_original_name(file.filename)
     try:

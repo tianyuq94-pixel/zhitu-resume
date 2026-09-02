@@ -8,6 +8,12 @@ from app.core.config import get_settings
 
 def create_app() -> FastAPI:
     settings = get_settings()
+    if settings.auto_create_schema:
+        import app.models  # noqa: F401
+        from app.db.base import Base
+        from app.db.session import engine
+
+        Base.metadata.create_all(bind=engine)
     application = FastAPI(
         title=settings.app_name,
         version=settings.app_version,

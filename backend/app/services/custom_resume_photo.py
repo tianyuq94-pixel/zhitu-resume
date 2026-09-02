@@ -4,6 +4,7 @@ import pymupdf
 
 from app.core.config import get_settings
 from app.storage.local import LocalResumeStorage
+from app.storage.vercel_blob import VercelBlobResumeStorage
 
 
 class ResumePhotoError(ValueError):
@@ -40,5 +41,8 @@ def validate_resume_photo(content: bytes, declared_mime_type: str | None) -> tup
 
 
 @lru_cache
-def get_custom_resume_photo_storage() -> LocalResumeStorage:
-    return LocalResumeStorage(get_settings().storage_root.parent / "custom-resume-photos")
+def get_custom_resume_photo_storage() -> LocalResumeStorage | VercelBlobResumeStorage:
+    settings = get_settings()
+    if settings.storage_backend == "vercel_blob":
+        return VercelBlobResumeStorage("custom-resume-photos")
+    return LocalResumeStorage(settings.storage_root.parent / "custom-resume-photos")
