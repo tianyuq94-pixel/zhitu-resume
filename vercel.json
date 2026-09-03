@@ -1,7 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "installCommand": "pnpm --dir frontend install --no-frozen-lockfile",
-  "buildCommand": "pnpm --dir frontend build",
+  "installCommand": "npm --prefix frontend install --include=dev",
+  "buildCommand": "npm --prefix frontend run build",
   "outputDirectory": "frontend/dist",
   "functions": {
     "api/index.py": {
