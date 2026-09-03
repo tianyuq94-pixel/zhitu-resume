@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=80"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "zhitu-resume"
+version = "0.1.0"
+description = "职途简历全栈网站"
+requires-python = ">=3.12"
+dependencies = [
+    "alembic>=1.19,<2",
+    "fastapi>=0.141,<0.142",
+    "httpx2>=2.12,<3",
+    "pymupdf>=1.28,<1.29",
+    "pwdlib[argon2]>=0.3.1,<0.4",
+    "pydantic-settings>=2.15,<3",
+    "pyjwt>=2.13,<3",
+    "pymysql>=1.2,<2",
+    "python-docx>=1.2,<2",
+    "python-multipart>=0.0.32,<0.1",
+    "reportlab>=4.4,<5",
+    "sqlalchemy>=2.0.52,<2.1",
+    "uvicorn[standard]>=0.52,<0.53",
+    "vercel>=0.10,<1",
+]
+
+[tool.vercel]
+entrypoint = "api.index:app"
+
+[tool.setuptools]
+packages = []
