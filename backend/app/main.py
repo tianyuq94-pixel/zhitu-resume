@@ -1,5 +1,9 @@
+from pathlib import Path
+
 from fastapi import FastAPI, Request
+from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from app.api.router import api_router
@@ -45,6 +49,18 @@ def create_app() -> FastAPI:
         return response
 
     application.include_router(api_router, prefix=settings.api_prefix)
+
+    frontend_dist = Path(__file__).resolve().parents[2] / "frontend" / "dist"
+    assets_dir = frontend_dist / "assets"
+    if assets_dir.is_dir() and (frontend_dist / "index.html").is_file():
+        application.mount("/assets", StaticFiles(directory=assets_dir), name="frontend-assets")
+
+        @application.get("/{requested_path:path}", include_in_schema=False)
+        def serve_frontend(requested_path: str) -> FileResponse:
+            candidate = (frontend_dist / requested_path).resolve()
+            if frontend_dist.resolve() in candidate.parents and candidate.is_file():
+                return FileResponse(candidate)
+            return FileResponse(frontend_dist / "index.html", headers={"Cache-Control": "no-cache"})
     return application
 
 

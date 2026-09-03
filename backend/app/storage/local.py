@@ -54,4 +54,8 @@ def get_resume_storage():
         from app.storage.vercel_blob import VercelBlobResumeStorage
 
         return VercelBlobResumeStorage("resumes")
+    if settings.storage_backend == "database":
+        from app.storage.database import DatabaseResumeStorage
+
+        return DatabaseResumeStorage("resumes")
     return LocalResumeStorage(settings.storage_root)

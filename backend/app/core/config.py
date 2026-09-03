@@ -41,7 +41,7 @@ class Settings(BaseSettings):
     secure_cookies: bool = False
 
     storage_root: Path = Field(default_factory=default_storage_root)
-    storage_backend: Literal["local", "vercel_blob"] = "local"
+    storage_backend: Literal["local", "vercel_blob", "database"] = "local"
     auto_create_schema: bool = False
     resume_max_bytes: int = 10 * 1024 * 1024
     resume_photo_max_bytes: int = 2 * 1024 * 1024

@@ -41,8 +41,12 @@ def validate_resume_photo(content: bytes, declared_mime_type: str | None) -> tup
 
 
 @lru_cache
-def get_custom_resume_photo_storage() -> LocalResumeStorage | VercelBlobResumeStorage:
+def get_custom_resume_photo_storage():
     settings = get_settings()
     if settings.storage_backend == "vercel_blob":
         return VercelBlobResumeStorage("custom-resume-photos")
+    if settings.storage_backend == "database":
+        from app.storage.database import DatabaseResumeStorage
+
+        return DatabaseResumeStorage("custom-resume-photos")
     return LocalResumeStorage(settings.storage_root.parent / "custom-resume-photos")

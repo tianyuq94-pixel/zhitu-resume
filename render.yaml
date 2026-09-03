@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: zhitu-resume-tianyuq94
+    runtime: docker
+    plan: free
+    healthCheckPath: /api/v1/health
+    autoDeployTrigger: commit
+    envVars:
+      - key: AI_CAREER_APP_ENV
+        value: production
+      - key: AI_CAREER_SECURE_COOKIES
+        value: "true"
+      - key: AI_CAREER_CORS_ORIGINS
+        value: '["https://zhitu-resume-tianyuq94.onrender.com"]'
+      - key: AI_CAREER_ALLOWED_HOSTS
+        value: '["*.onrender.com"]'
+      - key: AI_CAREER_STORAGE_BACKEND
+        value: database
+      - key: AI_CAREER_AUTO_CREATE_SCHEMA
+        value: "false"
+      - key: AI_CAREER_PDF_FONT_PATH
+        value: /usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc
+      - key: AI_CAREER_AUTH_SECRET
+        generateValue: true
+      - key: AI_CAREER_DATABASE_URL
+        sync: false
+      - key: AI_CAREER_DEEPSEEK_API_KEY
+        sync: false
