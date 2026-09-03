@@ -5,4 +5,4 @@ backend/.venv
 backend/tests
 frontend/dist
 frontend/node_modules
-storage
+/storage
