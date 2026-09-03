@@ -27,5 +27,8 @@ dependencies = [
 [tool.vercel]
 entrypoint = "api.index:app"
 
+[tool.vercel.scripts]
+build = "npm --prefix frontend install --include=dev && npm --prefix frontend run build"
+
 [tool.setuptools]
 packages = []
