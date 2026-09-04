@@ -1,104 +1,148 @@
-# 职途简历
+# 职途简历 · AI 求职助手
 
-这是“职途简历”网站的正式开发项目。当前已经完成基础工程、用户账户、主简历、AI 简历诊断、岗位匹配、岗位定制简历和 AI 模拟面试模块，并已接入 DeepSeek 进行真实流程验证。
+[![Live Demo](https://img.shields.io/badge/在线体验-zhitucv.online-3157d5?style=flat-square)](https://www.zhitucv.online)
+![Vue](https://img.shields.io/badge/Vue-3.5-42b883?style=flat-square&logo=vuedotjs&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.141-009688?style=flat-square&logo=fastapi&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3.12-3776ab?style=flat-square&logo=python&logoColor=white)
+[![License](https://img.shields.io/badge/License-MIT-f2c744?style=flat-square)](LICENSE)
 
-## V1.0 功能范围
+职途简历是一套面向真实求职流程的全栈 AI 应用。它从用户的真实简历出发，将简历诊断、岗位匹配、岗位定制简历和模拟面试串成一个完整工作流，并支持将定制结果导出为可直接使用的 PDF 或 Word 简历。
 
-1. 工作台
-2. 我的简历
-3. 岗位定制简历
-4. 岗位匹配
-5. AI 面试
+**在线体验：[https://www.zhitucv.online](https://www.zhitucv.online)**
 
-V1.0 暂不包含付费模块、手机号验证码登录和求职记录。AI 能力由后端统一接入，浏览器既不会收到 API 密钥，也不会收到模型名称或提示词版本。
+> 当前为个人作品展示与非商业试用版本。请勿在公开测试中上传身份证号、银行卡号等与求职无关的高敏感信息。
 
-## 项目结构
+![职途简历首页](docs/images/landing.png)
 
-- `frontend/`：网站页面（Vue 3 + TypeScript + Vite）
-- `backend/`：后端服务（FastAPI + SQLAlchemy）
-- `storage/`：本地简历和生成文件，默认不会提交到 Git
-- `Dockerfile` 与 `render.yaml`：Render 免费公开展示所需的构建和发布配置
-- `api/` 与 `vercel.json`：保留的 Vercel 发布配置
+## 核心功能
 
-## 当前已完成
+| 模块 | 能力 |
+| --- | --- |
+| 我的简历 | 上传 PDF/DOCX、解析文字、人工确认、替换与私有存储 |
+| AI 简历诊断 | 综合评分、维度评分、优势、问题和逐条修改建议 |
+| 岗位匹配 | 根据简历与 JD 输出匹配度、证据、缺失项和投递建议 |
+| 岗位定制简历 | 在不编造经历的前提下改写内容，逐条确认并保存独立版本 |
+| 成品导出 | 按统一模板实时预览，导出 A4 PDF 或可继续编辑的 Word |
+| AI 模拟面试 | 根据岗位生成 5 道问题，逐题反馈并生成综合报告 |
+| 工作台 | 展示主简历状态，并与最新诊断得分实时联动 |
 
-- 五个正式功能入口和基础页面框架
-- 前端与后端服务状态检查
-- 后端与本机 MySQL 数据库连通检查
-- 本地开发环境与密钥隔离规则
-- 用户名密码注册、登录、退出和登录状态保持
-- 登录页面保护、求职档案维护和修改密码
-- 密码强哈希、HttpOnly Cookie、CSRF 校验和基础频率限制
-- 登录或注册后先进入工作台；首次打开 AI 功能时再引导完善求职档案，保存后自动继续
-- 主简历 PDF / DOCX 上传、私有存储和登录权限保护
-- PDF 文字层与 DOCX 正文解析、文件真实性及安全边界校验
-- 解析文字检查、修改、确认、文件替换和完整删除
-- AI 简历诊断入口、准备状态、完整报告和失败重试界面
-- 工作台准备度与当前主简历最新一次诊断综合评分实时联动
-- 综合评分、五项维度评分、优势、问题和逐条修改建议
-- DeepSeek JSON 结构校验、原文引用校验、新数字拦截和最多三次重试
-- AI 调用状态与 Token 用量日志，日志不保存简历全文或 API Key
-- 岗位名称和 JD 必填、公司选填的 AI 岗位匹配流程
-- 岗位核心要求、简历证据、未体现项、投递结论和改进方向报告
-- 岗位匹配结果可继续带入岗位定制简历和岗位模拟面试
-- 岗位定制简历可独立创建，也可从岗位匹配结果自动带入岗位信息
-- AI 改写逐条展示原文、建议和理由，支持采纳、保留原文、手动修改和批量处理
-- 每份定制简历独立保存，不覆盖主简历；支持版本列表、再次编辑和删除
-- 后端拦截新增数字、英文技能及原文没有的事实性词语，缺失能力只作提示
-- 定制简历支持姓名、联系方式等基本信息编辑和私有证件照上传
-- 使用“简历模板”实时预览完整成品，经历标题与内容要点采用不同排版层级
-- 所有建议确认后可导出与网页预览一致的 A4 成品简历 PDF 或可继续编辑的 Word 文档
-- AI 模拟面试以岗位名称为必填项，公司和岗位要求选填，也可从岗位匹配结果带入后修改
-- 固定生成 5 道岗位相关文字题，其中至少 2 道结合主简历真实内容
-- 每题回答后保存相关性、具体程度、结构和表达评分，以及优点、问题和改进建议
-- 第五题完成后生成表达、岗位理解、经历证明和回答结构的综合报告与练习计划
-- 页面刷新可恢复未完成会话；最终报告失败时保留全部回答并支持单独重试
-- Render 部署时前后端由同一服务提供，上传的简历和证件照持久化到 TiDB，休眠或重新部署不会丢失
+## 项目亮点
 
-## 后续收费模块边界
+- **完整产品闭环**：不是单一聊天页面，而是从简历录入到面试训练的连续业务流程。
+- **事实约束**：AI 输出需要通过结构校验、原文引用校验和新增事实拦截，降低虚构经历的风险。
+- **可用成品**：岗位定制结果可以继续编辑，并导出为排版完整的 PDF/Word 简历。
+- **隐私与安全**：使用强密码哈希、HttpOnly Cookie、CSRF 校验、Host 白名单、HSTS 和接口频率限制。
+- **真实云端部署**：前端与 API 部署在 Vercel，数据保存到 TiDB Cloud，原始文件保存到 Private Vercel Blob。
+- **可扩展计费基础**：AI 请求日志已记录功能类型、状态、Token 用量和耗时；后续可增加次数余额、赠送流水与订单模块。
 
-当前阶段不接支付。已有 AI 调用日志可以作为后续次数统计的数据来源；网站主体完成后再增加账户次数余额、消费/赠送流水、邀请关系、订单和支付回调。届时可实现新用户免费 1 次、后续购买次数和邀请新用户赠送次数，无需重写现有 AI 功能页面。
+## 系统架构
 
-## 主简历使用限制
+```mermaid
+flowchart LR
+    U[用户浏览器] --> E[Vercel CDN / HTTPS]
+    E --> F[Vue 3 单页应用]
+    E --> A[FastAPI API]
+    A --> DB[(TiDB Cloud)]
+    A --> BS[(Private Vercel Blob)]
+    A --> AI[LLM API]
+```
 
-- 每个账户保留一份主简历，上传新文件会替换旧文件
-- 支持 PDF 和 DOCX，单个文件不超过 10 MB
-- PDF 必须带有可复制的正常文字层，暂不识别扫描件或图片简历
-- 不支持旧版 DOC、加密 PDF 和含宏的 Word 文件
-- 后续 AI 功能只读取用户检查并确认后的简历文字
+请求由同一域名进入前端和后端。API Key、数据库密码和文件访问令牌只保存在服务端环境变量中，不会发送到浏览器或提交到 Git。
+
+## 技术栈
+
+| 层级 | 技术 |
+| --- | --- |
+| 前端 | Vue 3、TypeScript、Vite、Pinia、Vue Router、Axios |
+| 后端 | Python 3.12、FastAPI、Pydantic、SQLAlchemy、Alembic |
+| 数据库 | MySQL 协议、TiDB Cloud |
+| 文件与导出 | Vercel Blob、PyMuPDF、python-docx、ReportLab |
+| AI | OpenAI-compatible Chat Completions API、结构化 JSON 校验 |
+| 部署 | Vercel Functions（香港区域）、Vercel CDN、GitHub 自动部署 |
+
+## 页面预览
+
+### 登录与账户系统
+
+![职途简历登录页](docs/images/login.png)
+
+登录后默认进入工作台；只有在首次使用 AI 功能时，系统才会引导用户完善求职档案。
+
+## 目录结构
+
+```text
+.
+├─ frontend/            Vue 3 前端
+├─ backend/             FastAPI、数据模型、迁移与测试
+├─ api/                 Vercel Python 函数入口
+├─ deploy/              自有服务器反向代理示例
+├─ docs/images/         README 展示图片
+├─ vercel.json          Vercel 构建、路由与运行区域配置
+└─ Dockerfile           容器部署入口
+```
 
 ## 本地运行
 
-### 1. 启动后端
+### 环境要求
 
-在 `backend` 目录执行：
+- Python 3.12+
+- Node.js 20+
+- pnpm 11+
+- MySQL 8 或兼容数据库
+
+### 启动后端
 
 ```powershell
+cd backend
+Copy-Item .env.example .env
 python -m venv .venv
 .\.venv\Scripts\python -m pip install -e ".[dev]"
 .\.venv\Scripts\python -m alembic upgrade head
 .\.venv\Scripts\python -m uvicorn app.main:app --reload
 ```
 
-后端默认地址：`http://127.0.0.1:8000`
+后端默认运行在 `http://127.0.0.1:8000`。请先在 `backend/.env` 中填写本地数据库参数，并为 `AI_CAREER_AUTH_SECRET` 设置不少于 32 位的随机值。
 
-### 2. 启动前端
-
-在 `frontend` 目录执行：
+### 启动前端
 
 ```powershell
+cd frontend
 pnpm install
 pnpm dev
 ```
 
-前端默认地址：`http://127.0.0.1:5173`
+前端默认运行在 `http://127.0.0.1:5173`。
 
-## 环境变量
+## 测试与构建
 
-数据库连接信息使用 `AI_CAREER_DB_*` 系列环境变量。DeepSeek 使用 `AI_CAREER_DEEPSEEK_API_KEY`。真实密码和密钥禁止写入代码或提交到 Git。
+```powershell
+cd backend
+.\.venv\Scripts\python -m pytest
 
-DeepSeek 默认使用 `https://api.deepseek.com` 和 `deepseek-v4-flash`，接口地址、模型与超时时间都可以通过环境变量修改。API Key 仅由后端读取，不会发送到浏览器。
+cd ..\frontend
+pnpm build
+```
 
-PDF 导出会优先使用 `AI_CAREER_PDF_FONT_PATH` 指定的中文字体；Windows 本地开发会自动使用系统中文字体。Linux 部署时应配置可用的中文 TTF/TTC 字体路径。
+## 部署
 
-若需免费公开展示，请按 [RENDER_DEPLOYMENT.md](RENDER_DEPLOYMENT.md) 使用 GitHub + Render + TiDB Cloud；无需购买服务器或域名。以后使用自有服务器和域名时，再按 [DEPLOYMENT.md](DEPLOYMENT.md) 完成 HTTPS、安全环境变量、反向代理和备份配置。
+生产环境使用 GitHub 与 Vercel 自动部署。具体变量、TiDB 和 Private Blob 配置见 [VERCEL_DEPLOYMENT.md](VERCEL_DEPLOYMENT.md)。如需部署到自有服务器，可参考 [DEPLOYMENT.md](DEPLOYMENT.md)；Render 配置作为可选部署方案保留在 [RENDER_DEPLOYMENT.md](RENDER_DEPLOYMENT.md)。
+
+生产密钥必须通过部署平台的环境变量保存。不要提交 `.env`、数据库连接地址、用户上传文件或任何真实 API Key。
+
+## V1.0 边界与路线图
+
+当前版本暂不包含支付、手机号验证码登录和求职记录。后续计划：
+
+- 管理员数据面板与访问分析
+- AI 免费次数、余额与邀请赠送流水
+- 支付订单与回调
+- 更多简历模板
+- OCR 扫描版简历识别
+
+## 参与项目
+
+欢迎提交 Issue 和 Pull Request。提交前请阅读 [CONTRIBUTING.md](CONTRIBUTING.md) 与 [SECURITY.md](SECURITY.md)，并确保测试数据不包含真实个人信息或密钥。
+
+## License
+
+本项目基于 [MIT License](LICENSE) 开源。

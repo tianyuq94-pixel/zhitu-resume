@@ -26,5 +26,6 @@ storage/generated/
 .idea/
 .vscode/
 .vercel/
+.chrome-readme-profile*/
 .DS_Store
 Thumbs.db
