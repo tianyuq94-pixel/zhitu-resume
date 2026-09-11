@@ -14,6 +14,7 @@ from app.models.ai import AIRequestLog, JobMatch
 from app.models.resume import Resume
 from app.schemas.job_match import JobMatchRequest, JobMatchResult, JobMatchView
 from app.services.rate_limit import auth_rate_limiter
+from app.services.career_facts import factual_resume
 
 router = APIRouter()
 
@@ -106,7 +107,7 @@ async def create_job_match(
 
     try:
         generated = await generate_job_match(
-            resume.parsed_text,
+            factual_resume(current_user, resume.parsed_text),
             profile_payload(current_user),
             payload.job_title,
             payload.company_name,

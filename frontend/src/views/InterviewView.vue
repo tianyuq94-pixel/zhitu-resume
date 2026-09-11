@@ -162,6 +162,16 @@ const loadPage = async () => {
     resume.value = resumeResponse.data
     session.value = sessionResponse.data
 
+    if (typeof route.query.agentRun === 'string') {
+      const { data: task } = await api.get<{ job_title: string; company_name: string; job_description: string; match?: { id: number } }>(`/agent/${route.query.agentRun}`)
+      form.job_title = task.job_title
+      form.company_name = task.company_name
+      form.job_requirements = task.job_description
+      form.job_match_id = task.match?.id ?? null
+      screen.value = 'prepare'
+      return
+    }
+
     const queryId = Number(route.query.jobMatchId)
     if (Number.isInteger(queryId) && queryId > 0) {
       const matchResponse = await api.get<JobMatch | null>('/job-matches/current')
@@ -198,7 +208,7 @@ const startInterview = async () => {
     feedbackQuestionIndex.value = null
     screen.value = 'answer'
     successMessage.value = '5 道岗位面试题已生成。'
-    void router.replace({ path: '/app/interview' })
+    void router.replace({ path: '/agent/interview' })
   } catch (error) {
     errorMessage.value = getApiErrorMessage(error, 'AI 暂时无法生成面试题，请稍后重试')
   } finally {

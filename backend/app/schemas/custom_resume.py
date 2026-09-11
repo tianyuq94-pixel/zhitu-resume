@@ -1,4 +1,7 @@
 import re
+import unicodedata
+from collections import Counter
+from difflib import SequenceMatcher
 from datetime import datetime
 from typing import Literal
 
@@ -63,8 +66,18 @@ Decision = Literal["pending", "accepted", "rejected", "custom"]
 
 
 class CustomResumeItem(GeneratedCustomResumeItem):
+    source_kind: Literal["resume", "supplement"] = "resume"
     decision: Decision
-    final_text: str = Field(min_length=2, max_length=2000)
+    final_text: str = Field(max_length=2000)
+    has_suggestion: bool = False
+
+    @model_validator(mode="after")
+    def classify_suggestion(self) -> "CustomResumeItem":
+        self.has_suggestion = self.source_kind == "supplement" or has_meaningful_change(self.source_text, self.suggested_text)
+        if not self.has_suggestion and self.decision != "custom":
+            self.decision = "rejected"
+            self.final_text = self.source_text
+        return self
 
 
 class CustomResumeSection(BaseModel):
@@ -78,7 +91,7 @@ class CustomResumeUpdateItem(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     decision: Decision
-    final_text: str = Field(min_length=2, max_length=2000)
+    final_text: str = Field(max_length=2000)
 
     @field_validator("final_text")
     @classmethod
@@ -178,15 +191,40 @@ def validate_generated_custom_resume(result: GeneratedCustomResumeResult, resume
                 raise ValueError("定制建议添加了原文中不存在的事实性中文词语")
 
 
-def build_editable_sections(result: GeneratedCustomResumeResult) -> list[dict]:
+def has_meaningful_change(source: str, suggested: str) -> bool:
+    """Conservative advice gate; cosmetic edits remain in the document as originals."""
+    def canonical(text: str) -> str:
+        text = unicodedata.normalize("NFKC", text).casefold()
+        return "".join(c for c in text if c.isalnum())
+
+    before, after = canonical(source), canonical(suggested)
+    if not before or not after or before == after:
+        return False
+    # Reordering the same words or swapping connective words is not useful advice.
+    connective = str.maketrans("", "", "的了并且及与和在于以为将把被对从由使通过进行完成相关其更等后中")
+    left, right = before.translate(connective), after.translate(connective)
+    common = sum((Counter(left) & Counter(right)).values())
+    total = len(left) + len(right)
+    if not total or 2 * common / total >= 0.84:
+        return False
+    matcher = SequenceMatcher(None, before, after, autojunk=False)
+    changed = sum(max(i2 - i1, j2 - j1) for tag, i1, i2, j1, j2 in matcher.get_opcodes() if tag != "equal")
+    return changed >= 6 and matcher.ratio() < 0.86
+
+
+def build_editable_sections(result: GeneratedCustomResumeResult, primary_text: str | None = None) -> list[dict]:
+    def is_new(item):
+        return primary_text is not None and re.sub(r"\s+", "", item.source_text).casefold() not in re.sub(r"\s+", "", primary_text).casefold()
+
     return [
         {
             "title": section.title,
             "items": [
                 {
                     **item.model_dump(),
-                    "decision": "pending",
-                    "final_text": item.source_text,
+                    "source_kind": "supplement" if is_new(item) else "resume",
+                    "decision": "pending" if is_new(item) or has_meaningful_change(item.source_text, item.suggested_text) else "rejected",
+                    "final_text": "" if is_new(item) else item.source_text,
                 }
                 for item in section.items
             ],

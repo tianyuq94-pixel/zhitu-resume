@@ -21,6 +21,7 @@ from app.schemas.custom_resume import (
     CustomResumeView,
     ResumeHeader,
     build_editable_sections,
+    has_meaningful_change,
 )
 from app.services.custom_resume_photo import (
     ResumePhotoError,
@@ -31,6 +32,7 @@ from app.services.custom_resume_docx import build_custom_resume_docx
 from app.services.custom_resume_pdf import build_custom_resume_pdf
 from app.services.rate_limit import auth_rate_limiter
 from app.services.resume_header import extract_resume_header
+from app.services.career_facts import factual_resume
 
 router = APIRouter()
 
@@ -54,7 +56,7 @@ def _pending_count(custom_resume: CustomResume) -> int:
         1
         for section in sections
         for item in section.get("items", [])
-        if item.get("decision") == "pending"
+        if item.get("decision") == "pending" and (item.get("source_kind") == "supplement" or has_meaningful_change(item["source_text"], item["suggested_text"]))
     )
 
 
@@ -166,7 +168,7 @@ async def create_custom_resume(
 
     try:
         generated = await generate_custom_resume(
-            resume.parsed_text,
+            factual_resume(current_user, resume.parsed_text),
             profile_payload(current_user),
             job_title,
             company_name,
@@ -175,7 +177,7 @@ async def create_custom_resume(
         custom_resume.content = {
             "template_name": "简历模板",
             "header": extract_resume_header(resume.parsed_text),
-            "sections": build_editable_sections(generated.result),
+            "sections": build_editable_sections(generated.result, primary_text=resume.parsed_text),
         }
         custom_resume.change_notes = {
             "missing_information_warnings": generated.result.missing_information_warnings
@@ -253,8 +255,11 @@ def update_custom_resume(
         merged_items = []
         for existing_item, update_item in zip(existing_items, update_section.items, strict=True):
             decision = update_item.decision
+            supplemental = existing_item.get("source_kind") == "supplement"
+            if decision != "custom" and not supplemental and not has_meaningful_change(existing_item["source_text"], existing_item["suggested_text"]):
+                decision = "rejected"
             if decision in {"pending", "rejected"}:
-                final_text = existing_item["source_text"]
+                final_text = "" if supplemental else existing_item["source_text"]
             elif decision == "accepted":
                 final_text = existing_item["suggested_text"]
             else:

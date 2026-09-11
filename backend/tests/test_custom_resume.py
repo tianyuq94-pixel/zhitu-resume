@@ -59,7 +59,7 @@ def test_custom_resume_accepts_only_source_based_changes() -> None:
     result = GeneratedCustomResumeResult.model_validate(VALID_RESULT)
     validate_generated_custom_resume(result, RESUME_TEXT)
     sections = build_editable_sections(result)
-    assert sections[0]["items"][0]["decision"] == "pending"
+    assert sections[0]["items"][0]["decision"] == "rejected"
     assert sections[0]["items"][0]["final_text"] == sections[0]["items"][0]["source_text"]
 
 

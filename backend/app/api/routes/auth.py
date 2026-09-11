@@ -15,8 +15,29 @@ from app.schemas.auth import LoginRequest, PasswordUpdateRequest, RegisterReques
 from app.services.auth import clear_auth_cookies, set_auth_cookies, user_to_view
 from app.services.rate_limit import auth_rate_limiter
 from app.services.security import dummy_password_hash, hash_password, verify_password
+from app.api.dependencies.auth import get_current_user
+from uuid import uuid4
+from app.services.agent_budget import check_budget
 
 router = APIRouter()
+
+
+@router.post('/guest', response_model=UserView, dependencies=[Depends(require_trusted_origin)])
+def guest(request: Request, response: Response, database: DatabaseSession) -> UserView:
+    try:
+        user = get_current_user(request, database)
+    except HTTPException as exc:
+        if exc.status_code != 401:
+            raise
+        check_budget(database, f'guest:{request_client_key(request)}', limit=10, window_seconds=3600)
+        # An unguessable, non-login identity. All resources still require the signed cookie.
+        user = User(username='guest_' + uuid4().hex[:26], password_hash=hash_password(uuid4().hex + uuid4().hex),
+                    profile=UserProfile(desired_cities=[]))
+        database.add(user)
+        database.commit()
+        database.refresh(user)
+    set_auth_cookies(response, user)
+    return user_to_view(user)
 
 
 @router.post(

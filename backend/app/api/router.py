@@ -8,8 +8,12 @@ from app.api.routes.interviews import router as interviews_router
 from app.api.routes.job_matches import router as job_matches_router
 from app.api.routes.profile import router as profile_router
 from app.api.routes.resumes import router as resumes_router
+from app.api.routes.persona import router as persona_router
 
 api_router = APIRouter()
+api_router.include_router(persona_router, prefix="/persona", tags=["persona"])
+from app.api.routes.agent import router as agent_router
+api_router.include_router(agent_router, prefix='/agent', tags=['agent'])
 api_router.include_router(health_router, prefix="/health", tags=["health"])
 api_router.include_router(auth_router, prefix="/auth", tags=["auth"])
 api_router.include_router(profile_router, prefix="/profile", tags=["profile"])

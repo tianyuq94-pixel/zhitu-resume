@@ -45,6 +45,7 @@ const handleLogout = async () => {
       </RouterLink>
 
       <nav class="main-nav" aria-label="主要功能">
+        <RouterLink to="/">← 返回三个入口</RouterLink>
         <RouterLink v-for="item in navigation" :key="item.to" :to="item.to">
           <span class="nav-icon" aria-hidden="true">
             <svg v-if="item.icon === 'grid'" viewBox="0 0 24 24"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z" /></svg>
@@ -61,7 +62,7 @@ const handleLogout = async () => {
         <RouterLink class="signed-in-user" to="/app/profile">
           <div class="user-avatar">{{ authStore.user?.username.slice(0, 1).toUpperCase() }}</div>
           <div>
-            <strong>{{ authStore.user?.username }}</strong>
+            <strong>{{ authStore.user?.username.startsWith('guest_') ? '访客工作空间' : authStore.user?.username }}</strong>
             <small>{{ authStore.user?.profile_completed ? '个人资料' : '完善求职档案' }}</small>
           </div>
         </RouterLink>

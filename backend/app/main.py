@@ -18,6 +18,9 @@ def create_app() -> FastAPI:
         from app.db.session import engine
 
         Base.metadata.create_all(bind=engine)
+        from app.db.schema import ensure_profile_extensions
+
+        ensure_profile_extensions(engine)
     application = FastAPI(
         title=settings.app_name,
         version=settings.app_version,

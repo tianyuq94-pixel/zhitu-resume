@@ -9,6 +9,7 @@ from app.models.ai import (
 from app.models.resume import Resume
 from app.models.stored_file import StoredFile
 from app.models.user import User, UserProfile
+from app.models.agent import AgentRun
 
 __all__ = [
     "AIRequestLog",

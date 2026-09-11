@@ -19,6 +19,8 @@ type JobMatch = {
 
 type Decision = 'pending' | 'accepted' | 'rejected' | 'custom'
 type CustomItem = {
+  source_kind: 'resume' | 'supplement'
+  has_suggestion: boolean
   item_type: 'heading' | 'bullet'
   source_text: string
   suggested_text: string
@@ -89,7 +91,7 @@ const pendingCount = computed(() => current.value?.sections.reduce(
   (total, section) => total + section.items.filter((item) => item.decision === 'pending').length,
   0,
 ) ?? 0)
-const totalItems = computed(() => current.value?.sections.reduce((total, section) => total + section.items.length, 0) ?? 0)
+const totalItems = computed(() => current.value?.sections.reduce((total, section) => total + section.items.filter(item => item.has_suggestion).length, 0) ?? 0)
 const headerComplete = computed(() => Boolean(current.value?.header.name.trim()))
 const photoUrl = computed(() => current.value?.header.has_photo
   ? `/api/v1/custom-resumes/${current.value.id}/photo?v=${photoVersion.value}`
@@ -207,7 +209,7 @@ const acceptItem = (item: CustomItem) => {
 
 const rejectItem = (item: CustomItem) => {
   item.decision = 'rejected'
-  item.final_text = item.source_text
+  item.final_text = item.source_kind === 'supplement' ? '' : item.source_text
 }
 
 const markCustom = (item: CustomItem) => {
@@ -217,6 +219,7 @@ const markCustom = (item: CustomItem) => {
 const applyAll = (decision: 'accepted' | 'rejected') => {
   if (!current.value) return
   current.value.sections.forEach((section) => section.items.forEach((item) => {
+    if (!item.has_suggestion) return
     if (decision === 'accepted') acceptItem(item)
     else rejectItem(item)
   }))
@@ -501,14 +504,14 @@ onMounted(loadPage)
                     <div class="custom-change-heading">
                       <span :class="['decision-chip', item.decision]">{{ { pending: '待处理', accepted: '已采纳', rejected: '保留原文', custom: '手动修改' }[item.decision] }}</span>
                       <span class="resume-line-type">{{ item.item_type === 'heading' ? '经历标题' : '内容要点' }}</span>
-                      <p>{{ item.reason }}</p>
+                      <p v-if="item.has_suggestion">{{ item.reason }}</p>
                     </div>
-                    <div class="custom-comparison-grid">
+                    <div v-if="item.has_suggestion" class="custom-comparison-grid">
                       <div><span>主简历原文</span><p>{{ item.source_text }}</p></div>
                       <div><span>AI 建议</span><p>{{ item.suggested_text }}</p></div>
                     </div>
                     <label class="custom-final-field"><span>最终内容</span><textarea v-model="item.final_text" maxlength="2000" @input="markCustom(item)"></textarea></label>
-                    <div class="custom-decision-actions">
+                    <div v-if="item.has_suggestion" class="custom-decision-actions">
                       <button type="button" @click="rejectItem(item)">保留原文</button>
                       <button type="button" @click="acceptItem(item)">采纳 AI 建议</button>
                     </div>

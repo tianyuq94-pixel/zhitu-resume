@@ -47,5 +47,7 @@ class UserProfile(TimestampMixin, Base):
     career_direction: Mapped[str | None] = mapped_column(String(100), nullable=True)
     desired_cities: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
     job_type: Mapped[str | None] = mapped_column(String(30), nullable=True)
+    extra_facts: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    facts_revision: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
 
     user: Mapped[User] = relationship(back_populates="profile")
