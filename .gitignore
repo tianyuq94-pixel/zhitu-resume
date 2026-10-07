@@ -21,6 +21,7 @@ coverage/
 # Runtime data
 storage/uploads/
 storage/generated/
+/tmp/
 
 # Editors and operating systems
 .idea/

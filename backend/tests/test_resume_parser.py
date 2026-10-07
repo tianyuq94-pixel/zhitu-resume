@@ -54,7 +54,7 @@ def test_blank_pdf_is_rejected() -> None:
     content = document.tobytes()
     document.close()
 
-    with pytest.raises(ResumeParseError, match="未识别到足够文字"):
+    with pytest.raises(ResumeParseError, match="Not enough text"):
         parse_resume(content, "blank.pdf", PDF_MIME)
 
 
@@ -63,4 +63,3 @@ def test_storage_key_cannot_escape_root(tmp_path) -> None:
 
     with pytest.raises(ValueError, match="Invalid storage key"):
         storage.path_for("../outside.pdf")
-

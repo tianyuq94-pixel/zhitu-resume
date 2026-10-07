@@ -23,7 +23,7 @@ def save_facts(payload: CareerFacts, current_user: CurrentUser, database: Databa
     ).values(extra_facts=payload.model_dump(exclude={"revision"}), facts_revision=payload.revision + 1))
     if changed.rowcount != 1:
         database.rollback()
-        raise HTTPException(409, "资料已在其他页面更新，请先复制当前编辑内容，再刷新核对")
+        raise HTTPException(409, "Your details were updated on another page. Please copy your current edits, then refresh to check")
     database.commit()
     database.refresh(current_user.profile)
     return facts_view(current_user)

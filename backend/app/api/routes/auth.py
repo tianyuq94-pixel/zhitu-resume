@@ -58,7 +58,7 @@ def register(
         window_seconds=600,
     )
     if database.scalar(select(User.id).where(User.username == payload.username)) is not None:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="该用户名已被使用")
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="This username is already taken")
 
     user = User(
         username=payload.username,
@@ -70,7 +70,7 @@ def register(
         database.commit()
     except IntegrityError as exc:
         database.rollback()
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="该用户名已被使用") from exc
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="This username is already taken") from exc
     database.refresh(user)
     user = database.scalar(
         select(User).options(selectinload(User.profile)).where(User.id == user.id)
@@ -102,7 +102,7 @@ def login(
     encoded_password = user.password_hash if user is not None else dummy_password_hash
     password_valid = verify_password(payload.password, encoded_password)
     if user is None or user.status != "active" or not password_valid:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="用户名或密码错误")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect username or password")
 
     set_auth_cookies(response, user)
     return user_to_view(user)
@@ -134,9 +134,9 @@ def update_password(
     database: DatabaseSession,
 ) -> UserView:
     if not verify_password(payload.current_password, current_user.password_hash):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="当前密码不正确")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Current password is incorrect")
     if verify_password(payload.new_password, current_user.password_hash):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="新密码不能与当前密码相同")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="New password cannot be the same as the current password")
 
     current_user.password_hash = hash_password(payload.new_password)
     current_user.token_version += 1

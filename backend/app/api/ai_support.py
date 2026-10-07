@@ -22,15 +22,15 @@ def profile_payload(current_user: CurrentUser) -> dict:
 
 def public_ai_error(error: AIServiceError, fallback_message: str) -> tuple[int, str]:
     if error.code == "AI_NOT_CONFIGURED":
-        return status.HTTP_503_SERVICE_UNAVAILABLE, "智能服务尚未配置，请联系网站管理员"
+        return status.HTTP_503_SERVICE_UNAVAILABLE, "Smart service is not yet configured. Please contact the site administrator"
     if error.code == "AI_AUTH_FAILED":
-        return status.HTTP_503_SERVICE_UNAVAILABLE, "智能服务配置异常，请联系网站管理员"
+        return status.HTTP_503_SERVICE_UNAVAILABLE, "Smart service configuration error. Please contact the site administrator"
     if error.code == "AI_BALANCE_INSUFFICIENT":
-        return status.HTTP_503_SERVICE_UNAVAILABLE, "智能服务暂时不可用，请稍后重试"
+        return status.HTTP_503_SERVICE_UNAVAILABLE, "Smart service is temporarily unavailable. Please try again later"
     if error.code == "AI_RATE_LIMITED":
-        return status.HTTP_429_TOO_MANY_REQUESTS, "AI 服务请求较多，请稍后重试"
+        return status.HTTP_429_TOO_MANY_REQUESTS, "The AI service is busy. Please try again later."
     if error.code == "AI_TIMEOUT":
-        return status.HTTP_504_GATEWAY_TIMEOUT, "AI 分析超时，请重试"
+        return status.HTTP_504_GATEWAY_TIMEOUT, "AI analysis timed out, please try again"
     if error.code == "AI_INPUT_TOO_LONG":
-        return status.HTTP_400_BAD_REQUEST, "输入内容过长，请精简后重试"
+        return status.HTTP_400_BAD_REQUEST, "Input is too long, please shorten it and try again"
     return status.HTTP_503_SERVICE_UNAVAILABLE, fallback_message

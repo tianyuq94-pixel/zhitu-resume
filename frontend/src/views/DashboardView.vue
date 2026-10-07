@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { computed, onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 
@@ -11,8 +12,8 @@ const resumeExists = ref(false)
 const readinessScore = ref<number | null>(null)
 
 const readinessLabel = computed(() => {
-  if (readinessScore.value !== null) return '最新简历诊断结果'
-  return resumeExists.value ? '简历已添加，等待 AI 诊断' : '添加简历后开始分析'
+  if (readinessScore.value !== null) return 'Latest CV diagnosis result'
+  return resumeExists.value ? 'CV added. Waiting for AI diagnosis' : 'Add a CV to start the analysis'
 })
 
 const readinessStyle = computed(() => ({
@@ -53,57 +54,57 @@ onMounted(() => {
   <section class="dashboard-stack">
     <div class="hero-card">
       <div class="hero-copy">
-        <span class="eyebrow">CAREER WORKSPACE</span>
-        <h2>让每一次求职准备<br />都更有方向</h2>
-        <p>从一份真实简历出发，完成岗位定制、匹配分析和针对性模拟面试。</p>
+        <span class="eyebrow">{{ t("CAREER WORKSPACE") }}</span>
+        <h2>{{ t("Make every job application preparation") }}<br />{{ t("All the more direction") }}</h2>
+        <p>{{ t("Starting from a real CV, complete role customisation, fit analysis and targeted mock interviews.") }}</p>
         <div class="hero-actions">
-          <RouterLink class="primary-button" to="/app/resume">创建我的简历</RouterLink>
-          <RouterLink class="secondary-button" to="/app/job-match">了解岗位匹配</RouterLink>
+          <RouterLink class="primary-button" to="/app/resume">{{ t("Create my CV") }}</RouterLink>
+          <RouterLink class="secondary-button" to="/app/job-match">{{ t("Explore role fit") }}</RouterLink>
         </div>
       </div>
 
-      <RouterLink class="hero-visual" :to="readinessScore === null ? '/app/resume' : '/app/resume/diagnosis'" :style="readinessStyle" aria-label="查看简历准备度详情">
+      <RouterLink class="hero-visual" :to="readinessScore === null ? '/app/resume' : '/app/resume/diagnosis'" :style="readinessStyle" :aria-label="t('View CV readiness details')">
         <div class="score-orbit score-orbit-large"></div>
         <div class="score-orbit score-orbit-small"></div>
         <div :class="['score-card', { measured: readinessScore !== null }]">
-          <span>准备度</span>
-          <strong>{{ readinessScore === null ? '—' : readinessScore }}</strong>
-          <small>{{ readinessLabel }}</small>
+          <span>{{ t("Readiness") }}</span>
+          <strong>{{ t(readinessScore === null ? '—' : readinessScore) }}</strong>
+          <small>{{ t(readinessLabel) }}</small>
         </div>
       </RouterLink>
     </div>
 
     <div class="section-heading">
       <div>
-        <span class="eyebrow">QUICK START</span>
-        <h2>从这里开始</h2>
+        <span class="eyebrow">{{ t("QUICK START") }}</span>
+        <h2>{{ t("Start here") }}</h2>
       </div>
       <button class="service-status" type="button" @click="checkService">
         <span :class="['status-dot', serviceState]"></span>
-        <template v-if="serviceState === 'checking'">正在检查基础服务</template>
-        <template v-else-if="serviceState === 'ready'">基础服务运行正常</template>
-        <template v-else>后端服务尚未启动</template>
+        <template v-if="serviceState === 'checking'">{{ t("Checking core services") }}</template>
+        <template v-else-if="serviceState === 'ready'">{{ t("Core services running normally") }}</template>
+        <template v-else>{{ t("The backend service has not been started yet") }}</template>
       </button>
     </div>
 
     <div class="feature-grid">
       <RouterLink class="feature-card" to="/app/resume">
         <span class="feature-index">01</span>
-        <h3>建立主简历</h3>
-        <p>上传 PDF 或 Word，确认系统解析出的教育、项目、实习和技能信息。</p>
-        <span class="card-link">进入我的简历 <b>→</b></span>
+        <h3>{{ t("Create master CV") }}</h3>
+        <p>{{ t("Upload a PDF or Word file and confirm the education, projects, internships and skills the system has parsed.") }}</p>
+        <span class="card-link">{{ t("Go to my CV") }} <b>→</b></span>
       </RouterLink>
       <RouterLink class="feature-card" to="/app/custom-resumes">
         <span class="feature-index">02</span>
-        <h3>生成定制版本</h3>
-        <p>围绕目标岗位重新组织真实经历，得到可以继续编辑和导出的简历。</p>
-        <span class="card-link">进入定制简历 <b>→</b></span>
+        <h3>{{ t("Generate customised version") }}</h3>
+        <p>{{ t("Reorganise your real experience around the target role to produce a CV you can keep editing and export.") }}</p>
+        <span class="card-link">{{ t("Go to customised CV") }} <b>→</b></span>
       </RouterLink>
       <RouterLink class="feature-card" to="/app/interview">
         <span class="feature-index">03</span>
-        <h3>开始岗位面试</h3>
-        <p>指定岗位后回答五道相关问题，逐题获得反馈，最后查看完整报告。</p>
-        <span class="card-link">进入 AI 面试 <b>→</b></span>
+        <h3>{{ t("Start role interview") }}</h3>
+        <p>{{ t("After specifying a role, answer five related questions, receive feedback on each, and finally view the full report.") }}</p>
+        <span class="card-link">{{ t("Go to AI interview") }} <b>→</b></span>
       </RouterLink>
     </div>
   </section>

@@ -46,7 +46,7 @@ def _owned_custom_resume(database: DatabaseSession, user_id: int, custom_resume_
         select(CustomResume).where(CustomResume.id == custom_resume_id, CustomResume.user_id == user_id)
     )
     if custom_resume is None or custom_resume.status not in {"draft", "ready"}:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="未找到这份定制简历")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="This customised CV was not found")
     return custom_resume
 
 
@@ -120,9 +120,9 @@ async def create_custom_resume(
 ) -> CustomResumeView:
     resume = _primary_resume(database, current_user.id)
     if resume is None:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="请先上传主简历")
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Please upload your main CV first")
     if resume.confirmed_at is None:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="请先检查并确认简历文字")
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Please check and confirm the CV text first")
 
     job_match: JobMatch | None = None
     if payload.job_match_id is not None:
@@ -134,9 +134,9 @@ async def create_custom_resume(
             )
         )
         if job_match is None:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="未找到对应的岗位匹配结果")
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No matching job results found")
         if job_match.resume_id != resume.id or job_match.resume_version != resume.content_version:
-            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="主简历已更新，请重新进行岗位匹配")
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Main CV updated. Please run job matching again")
         job_title = job_match.job_title
         company_name = job_match.company_name
         job_description = job_match.job_description
@@ -175,7 +175,7 @@ async def create_custom_resume(
             job_description,
         )
         custom_resume.content = {
-            "template_name": "简历模板",
+            "template_name": "CV template",
             "header": extract_resume_header(resume.parsed_text),
             "sections": build_editable_sections(generated.result, primary_text=resume.parsed_text),
         }
@@ -215,7 +215,7 @@ async def create_custom_resume(
             )
         )
         database.commit()
-        status_code, message = public_ai_error(exc, "AI 暂时无法生成定制简历，请稍后重试")
+        status_code, message = public_ai_error(exc, "The AI cannot generate a customised CV at the moment, please try again later")
         raise HTTPException(status_code=status_code, detail=message) from exc
 
 
@@ -245,13 +245,13 @@ def update_custom_resume(
     existing_sections = (custom_resume.content or {}).get("sections", [])
     existing_header = (custom_resume.content or {}).get("header", {})
     if len(payload.sections) != len(existing_sections):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="简历栏目结构与原版本不一致")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="CV section structure differs from the original version")
 
     merged_sections: list[dict] = []
     for existing_section, update_section in zip(existing_sections, payload.sections, strict=True):
         existing_items = existing_section.get("items", [])
         if len(update_section.items) != len(existing_items):
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="简历内容结构与原版本不一致")
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="The CV content structure does not match the original version")
         merged_items = []
         for existing_item, update_item in zip(existing_items, update_section.items, strict=True):
             decision = update_item.decision
@@ -272,7 +272,7 @@ def update_custom_resume(
         if existing_header.get(private_key):
             merged_header[private_key] = existing_header[private_key]
     custom_resume.content = {
-        "template_name": "简历模板",
+        "template_name": "CV template",
         "header": merged_header,
         "sections": merged_sections,
     }
@@ -298,10 +298,10 @@ def export_custom_resume(
 ) -> Response:
     custom_resume = _owned_custom_resume(database, current_user.id, custom_resume_id)
     if custom_resume.status != "ready":
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="请填写姓名、处理完全部 AI 建议并保存")
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Please enter your name, process all AI suggestions and save")
     pdf_bytes = build_custom_resume_pdf(custom_resume)
     safe_title = "".join(character for character in custom_resume.job_title if character not in '\\/:*?"<>|')[:50]
-    filename = f"{safe_title or '岗位'}-定制简历.pdf"
+    filename = f"{safe_title or 'Role'}-tailored-cv.pdf"
     return Response(
         content=pdf_bytes,
         media_type="application/pdf",
@@ -320,10 +320,10 @@ def export_custom_resume_word(
 ) -> Response:
     custom_resume = _owned_custom_resume(database, current_user.id, custom_resume_id)
     if custom_resume.status != "ready":
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="请填写姓名、处理完全部 AI 建议并保存")
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Please enter your name, process all AI suggestions and save")
     docx_bytes = build_custom_resume_docx(custom_resume)
     safe_title = "".join(character for character in custom_resume.job_title if character not in '\\/:*?"<>|')[:50]
-    filename = f"{safe_title or '岗位'}-定制简历.docx"
+    filename = f"{safe_title or 'Role'}-tailored-cv.docx"
     return Response(
         content=docx_bytes,
         media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -341,10 +341,10 @@ def get_custom_resume_photo(
     header = (custom_resume.content or {}).get("header", {})
     storage_key = header.get("_photo_storage_key")
     if not storage_key:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="这份简历还没有证件照")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="This CV has no ID photo yet")
     path = get_custom_resume_photo_storage().path_for(storage_key)
     if not path.is_file():
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="证件照文件不存在")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="ID photo file does not exist")
     return Response(
         content=path.read_bytes(),
         media_type=header.get("_photo_mime") or "image/jpeg",

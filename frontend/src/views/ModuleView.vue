@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 defineProps<{
   eyebrow: string
   title: string
@@ -10,17 +11,16 @@ defineProps<{
 <template>
   <section class="module-page">
     <div class="module-intro">
-      <span class="eyebrow">{{ eyebrow }}</span>
-      <h2>{{ title }}</h2>
-      <p>{{ description }}</p>
+      <span class="eyebrow">{{ t(eyebrow) }}</span>
+      <h2>{{ t(title) }}</h2>
+      <p>{{ t(description) }}</p>
     </div>
 
     <div class="empty-state">
       <div class="empty-icon" aria-hidden="true">✦</div>
-      <h3>功能即将开始开发</h3>
-      <p>{{ nextStep }}</p>
-      <span>当前先保证项目基础稳定，再按规划逐步完成每个模块。</span>
+      <h3>{{ t("Feature development starting soon") }}</h3>
+      <p>{{ t(nextStep) }}</p>
+      <span>{{ t("For now, keep the project foundation stable first, then complete each module step by step as planned.") }}</span>
     </div>
   </section>
 </template>
-

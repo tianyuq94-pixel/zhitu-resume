@@ -56,7 +56,7 @@ def test_valid_diagnosis_references_original_resume() -> None:
 def test_diagnosis_rejects_new_numbers() -> None:
     payload = {**VALID_RESULT, "suggestions": [{**VALID_RESULT["suggestions"][0], "suggested_text": "将成功率提升至 100%。"}]}
     result = ResumeDiagnosisResult.model_validate(payload)
-    with pytest.raises(ValueError, match="数字"):
+    with pytest.raises(ValueError, match="figures"):
         validate_diagnosis_facts(result, RESUME_TEXT)
 
 

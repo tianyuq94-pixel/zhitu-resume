@@ -24,6 +24,7 @@ from reportlab.platypus import (
 from app.core.config import get_settings
 from app.models.ai import CustomResume
 from app.services.custom_resume_photo import get_custom_resume_photo_storage
+from app.localisation import tr, request_language
 
 
 def _register_chinese_fonts() -> tuple[str, str]:
@@ -70,19 +71,19 @@ def _header_story(custom_resume: CustomResume, styles: dict[str, ParagraphStyle]
     header = content.get("header") or {}
     name = str(header.get("name") or "").strip()
     political_status = str(header.get("political_status") or "").strip()
-    name_line = escape(name or "姓名")
+    name_line = escape(name or tr("Name"))
     if political_status:
         name_line += f' <font size="11">（{escape(political_status)}）</font>'
 
     left: list = [Paragraph(name_line, styles["name"]), Spacer(1, 3.5 * mm)]
     contact_items = [
-        ("联系电话", header.get("phone")),
-        ("电子邮箱", header.get("email")),
-        ("所在地", header.get("location")),
-        ("出生年月", header.get("birth_date")),
+        (tr("Phone"), header.get("phone")),
+        (tr("Email"), header.get("email")),
+        (tr("Location"), header.get("location")),
+        (tr("Date of birth"), header.get("birth_date")),
     ]
     cells = [
-        Paragraph(f"<b>{label}：</b>{escape(str(value).strip())}", styles["contact"])
+        Paragraph(f"<b>{label}: </b>{escape(str(value).strip())}", styles["contact"])
         for label, value in contact_items
         if str(value or "").strip()
     ]
@@ -126,7 +127,8 @@ def _header_story(custom_resume: CustomResume, styles: dict[str, ParagraphStyle]
 
 
 def build_custom_resume_pdf(custom_resume: CustomResume) -> bytes:
-    regular_font, bold_font = _register_chinese_fonts()
+    has_chinese = any('\u3400' <= character <= '\u9fff' for character in str(custom_resume.content or {}))
+    regular_font, bold_font = _register_chinese_fonts() if has_chinese or request_language.get() == 'zh' else ('Helvetica', 'Helvetica-Bold')
     buffer = BytesIO()
     content = custom_resume.content or {}
     header = content.get("header") or {}
@@ -137,9 +139,9 @@ def build_custom_resume_pdf(custom_resume: CustomResume) -> bytes:
         leftMargin=15 * mm,
         topMargin=14 * mm,
         bottomMargin=14 * mm,
-        title=f"{str(header.get('name') or '').strip()}简历",
-        author="职途简历",
-        subject="个人简历",
+        title=f"{str(header.get('name') or '').strip()} CV",
+        author="Zhitu CV",
+        subject="Personal CV",
     )
 
     base = getSampleStyleSheet()
@@ -203,7 +205,7 @@ def build_custom_resume_pdf(custom_resume: CustomResume) -> bytes:
 
     def draw_footer(canvas, doc) -> None:
         canvas.saveState()
-        footer = Paragraph(f"第 {doc.page} 页", styles["footer"])
+        footer = Paragraph(tr("Page {page}", page=doc.page), styles["footer"])
         footer.wrapOn(canvas, A4[0] - 30 * mm, 6 * mm)
         footer.drawOn(canvas, 15 * mm, 6.5 * mm)
         canvas.restoreState()

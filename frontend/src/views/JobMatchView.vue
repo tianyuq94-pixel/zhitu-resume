@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t, locale } from '@/i18n'
 import { computed, onMounted, reactive, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 
@@ -48,12 +49,12 @@ const canAnalyze = computed(() => form.job_title.trim().length >= 2 && effective
 
 const verdictText = computed(() => {
   if (!result.value) return ''
-  return { recommend: '推荐投递', consider: '可以尝试', low: '暂不推荐' }[result.value.verdict]
+  return { recommend: 'Recommended applications', consider: 'You can try', low: 'Not recommended for now' }[result.value.verdict]
 })
 
 const formatDate = (value: string) => {
   const utcValue = /(?:Z|[+-]\d{2}:\d{2})$/.test(value) ? value : `${value}Z`
-  return new Intl.DateTimeFormat('zh-CN', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(utcValue))
+  return new Intl.DateTimeFormat(locale.value === 'zh' ? 'zh-CN' : 'en-GB', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(utcValue))
 }
 
 const populateForm = (jobMatch: JobMatch) => {
@@ -77,7 +78,7 @@ const loadPage = async () => {
       showForm.value = false
     }
   } catch (error) {
-    errorMessage.value = getApiErrorMessage(error, '岗位匹配页面加载失败')
+    errorMessage.value = getApiErrorMessage(error, 'Failed to load the job match page')
   } finally {
     loading.value = false
   }
@@ -86,7 +87,7 @@ const loadPage = async () => {
 const analyzeJob = async () => {
   errorMessage.value = ''
   if (!canAnalyze.value) {
-    errorMessage.value = '请填写岗位名称，并输入不少于 30 个有效字符的岗位 JD'
+    errorMessage.value = 'Please enter the job title and a job description of at least 30 valid characters'
     return
   }
   analyzing.value = true
@@ -104,7 +105,7 @@ const analyzeJob = async () => {
     populateForm(response.data)
     showForm.value = false
   } catch (error) {
-    errorMessage.value = getApiErrorMessage(error, 'AI 岗位匹配失败，请稍后重试')
+    errorMessage.value = getApiErrorMessage(error, 'AI job matching failed, please try again later')
   } finally {
     analyzing.value = false
   }
@@ -121,48 +122,48 @@ onMounted(loadPage)
 <template>
   <section class="job-match-page">
     <div class="module-intro job-match-intro">
-      <span class="eyebrow">JOB MATCHING</span>
-      <h2>岗位匹配</h2>
-      <p>把目标岗位 JD 与已确认的主简历逐项对照，判断哪些要求已有证据、哪些尚未在简历中体现。</p>
+      <span class="eyebrow">{{ t("JOB MATCHING") }}</span>
+      <h2>{{ t("Job match") }}</h2>
+      <p>{{ t("Compare the target role's JD with the confirmed master CV item by item to determine which requirements already have evidence and which are not yet reflected in the CV.") }}</p>
     </div>
 
-    <div v-if="loading" class="profile-loading">正在加载岗位匹配信息…</div>
+    <div v-if="loading" class="profile-loading">{{ t("Loading role match information…") }}</div>
     <template v-else>
       <div v-if="!resume" class="diagnosis-empty-card">
-        <span>01</span><h3>还没有主简历</h3><p>岗位匹配必须基于一份真实主简历。</p>
-        <RouterLink class="save-button diagnosis-main-button" to="/app/resume">去上传简历</RouterLink>
+        <span>01</span><h3>{{ t("No main CV yet") }}</h3><p>{{ t("Job matching must be based on a real master CV.") }}</p>
+        <RouterLink class="save-button diagnosis-main-button" to="/app/resume">{{ t("Go to upload CV") }}</RouterLink>
       </div>
 
       <div v-else-if="!resume.confirmed_at" class="diagnosis-empty-card">
-        <span>02</span><h3>主简历文字尚未确认</h3><p>请先检查解析文字，避免 AI 使用错误内容进行匹配。</p>
-        <RouterLink class="save-button diagnosis-main-button" to="/app/resume">去确认文字</RouterLink>
+        <span>02</span><h3>{{ t("Main CV text not yet confirmed") }}</h3><p>{{ t("Please check the parsed text to avoid the AI matching with incorrect content.") }}</p>
+        <RouterLink class="save-button diagnosis-main-button" to="/app/resume">{{ t("Go to confirm text") }}</RouterLink>
       </div>
 
       <template v-else>
         <form v-if="showForm || !result" class="job-match-form-card" @submit.prevent="analyzeJob">
           <div class="job-match-form-heading">
-            <div><span>岗位信息</span><h3>{{ result ? '分析新的目标岗位' : '这个岗位适合我吗？' }}</h3></div>
-            <button v-if="result" type="button" @click="showForm = false">取消</button>
+            <div><span>{{ t("Role information") }}</span><h3>{{ t(result ? 'Analyse a new target role' : 'Is this role right for me?') }}</h3></div>
+            <button v-if="result" type="button" @click="showForm = false">{{ t("Cancel") }}</button>
           </div>
 
           <div class="job-basic-grid">
-            <label><span>岗位名称 <b>*</b></span>
-              <input v-model="form.job_title" maxlength="100" placeholder="例如：前端开发工程师" />
+            <label><span>{{ t("Job title") }} <b>*</b></span>
+              <input v-model="form.job_title" maxlength="100" :placeholder="t('For example: Front-end Development Engineer')" />
             </label>
-            <label><span>公司名称 <small>选填</small></span>
-              <input v-model="form.company_name" maxlength="100" placeholder="例如：某某科技" />
+            <label><span>{{ t("Company name") }} <small>{{ t("Optional") }}</small></span>
+              <input v-model="form.company_name" maxlength="100" :placeholder="t('For example: XX Technology')" />
             </label>
           </div>
 
-          <label class="job-jd-field"><span class="field-label">岗位 JD <b>*</b></span>
-            <textarea v-model="form.job_description" maxlength="20000" placeholder="粘贴岗位职责、任职要求和加分项…"></textarea>
-            <span class="field-count">{{ effectiveJdLength.toLocaleString() }} / 20,000 个有效字符</span>
+          <label class="job-jd-field"><span class="field-label">{{ t("Role JD") }} <b>*</b></span>
+            <textarea v-model="form.job_description" maxlength="20000" :placeholder="t('Paste the job responsibilities, requirements and desirable criteria…')"></textarea>
+            <span class="field-count">{{ t(effectiveJdLength.toLocaleString()) }} {{ t("/ 20,000 valid characters") }}</span>
           </label>
 
           <div class="job-form-footer">
-            <div><b>当前主简历</b><span>{{ resume.original_name }} · 内容版本 {{ resume.content_version }}</span></div>
+            <div><b>{{ t("Current master CV") }}</b><span>{{ t(resume.original_name) }} {{ t("· Content version") }} {{ t(resume.content_version) }}</span></div>
             <button class="save-button job-analyze-button" type="submit" :disabled="analyzing || !canAnalyze">
-              {{ analyzing ? '正在逐项分析岗位匹配…' : '开始 AI 匹配' }}
+              {{ t(analyzing ? 'Analysing role match item by item…' : 'Start AI matching') }}
             </button>
           </div>
         </form>
@@ -170,69 +171,69 @@ onMounted(loadPage)
         <template v-if="result && !showForm">
           <div class="job-match-summary">
             <div :class="['job-match-score', `verdict-${result.verdict}`]">
-              <span>岗位匹配度</span><strong>{{ result.match_score }}</strong><small>/ 100</small>
+              <span>{{ t("Job match score") }}</span><strong>{{ t(result.match_score) }}</strong><small>/ 100</small>
             </div>
             <div class="job-match-summary-main">
               <div class="job-summary-topline">
-                <div><span>{{ result.company_name || '目标岗位' }}</span><h3>{{ result.job_title }}</h3></div>
-                <button type="button" @click="startNewAnalysis">分析新岗位</button>
+                <div><span>{{ t(result.company_name || 'Target role') }}</span><h3>{{ t(result.job_title) }}</h3></div>
+                <button type="button" @click="startNewAnalysis">{{ t("Analyse new role") }}</button>
               </div>
-              <div :class="['verdict-badge', `verdict-${result.verdict}`]">{{ verdictText }}</div>
-              <p>{{ result.verdict_reason }}</p>
-              <small>基于主简历内容版本 {{ result.resume_version }} · {{ formatDate(result.created_at) }}</small>
+              <div :class="['verdict-badge', `verdict-${result.verdict}`]">{{ t(verdictText) }}</div>
+              <p>{{ t(result.verdict_reason) }}</p>
+              <small>{{ t("Based on master CV content version") }} {{ t(result.resume_version) }} · {{ t(formatDate(result.created_at)) }}</small>
             </div>
           </div>
 
           <section class="job-requirements-section">
             <div class="section-heading job-section-heading">
-              <div><span class="eyebrow">KEY REQUIREMENTS</span><h2>岗位核心要求</h2></div>
-              <small>{{ result.key_requirements.length }} 项</small>
+              <div><span class="eyebrow">{{ t("KEY REQUIREMENTS") }}</span><h2>{{ t("Key job requirements") }}</h2></div>
+              <small>{{ t(result.key_requirements.length) }} {{ t("items") }}</small>
             </div>
             <div class="requirement-grid">
               <article v-for="(item, index) in result.key_requirements" :key="item.requirement">
-                <span>{{ String(index + 1).padStart(2, '0') }}</span><h3>{{ item.requirement }}</h3>
-                <blockquote>{{ item.jd_evidence }}</blockquote>
+                <span>{{ t(String(index + 1).padStart(2, '0')) }}</span><h3>{{ t(item.requirement) }}</h3>
+                <blockquote>{{ t(item.jd_evidence) }}</blockquote>
               </article>
             </div>
           </section>
 
           <div class="job-evidence-columns">
             <section class="job-evidence-card matched-card">
-              <div class="card-heading"><div><span>MATCHED</span><h3>已匹配能力</h3></div><small>{{ result.matched_items.length }} 项</small></div>
+              <div class="card-heading"><div><span>{{ t("MATCHED") }}</span><h3>{{ t("Matched skills") }}</h3></div><small>{{ t(result.matched_items.length) }} {{ t("items") }}</small></div>
               <div v-if="result.matched_items.length" class="evidence-list">
                 <article v-for="item in result.matched_items" :key="item.requirement">
-                  <h4>{{ item.requirement }}</h4><p>{{ item.resume_evidence }}</p><small>来自主简历原文</small>
+                  <h4>{{ t(item.requirement) }}</h4><p>{{ t(item.resume_evidence) }}</p><small>{{ t("From the original main CV") }}</small>
                 </article>
               </div>
-              <p v-else class="empty-evidence">当前简历中暂未找到直接匹配证据。</p>
+              <p v-else class="empty-evidence">{{ t("No directly matching evidence found in the current CV.") }}</p>
             </section>
 
             <section class="job-evidence-card missing-card">
-              <div class="card-heading"><div><span>NOT SHOWN</span><h3>简历未体现</h3></div><small>{{ result.missing_items.length }} 项</small></div>
+              <div class="card-heading"><div><span>{{ t("NOT SHOWN") }}</span><h3>{{ t("Not shown on CV") }}</h3></div><small>{{ t(result.missing_items.length) }} {{ t("items") }}</small></div>
               <div v-if="result.missing_items.length" class="evidence-list">
                 <article v-for="item in result.missing_items" :key="item.requirement">
-                  <h4>{{ item.requirement }}</h4><p>{{ item.explanation }}</p><small>不代表你一定不具备</small>
+                  <h4>{{ t(item.requirement) }}</h4><p>{{ t(item.explanation) }}</p><small>{{ t("does not necessarily mean you lack") }}</small>
                 </article>
               </div>
-              <p v-else class="empty-evidence">岗位核心要求均能在简历中找到对应证据。</p>
+              <p v-else class="empty-evidence">{{ t("All key job requirements can be evidenced in the CV.") }}</p>
             </section>
           </div>
 
           <section class="job-improvements-card">
-            <div><span>BEFORE APPLYING</span><h3>投递前改进方向</h3></div>
-            <ol><li v-for="item in result.improvements" :key="item">{{ item }}</li></ol>
+            <div><span>{{ t("BEFORE APPLYING") }}</span><h3>{{ t("Areas for improvement before applying") }}</h3></div>
+            <ol><li v-for="item in result.improvements" :key="item">{{ t(item) }}</li></ol>
           </section>
 
           <div class="job-next-actions">
-            <div><b>继续准备这个岗位</b><span>岗位信息会在下一功能中自动带入。</span></div>
-            <RouterLink :to="{ path: '/app/custom-resumes', query: { jobMatchId: result.id } }">生成岗位定制简历</RouterLink>
-            <RouterLink :to="{ path: '/app/interview', query: { jobMatchId: result.id } }">开始岗位模拟面试</RouterLink>
+            <div><b>{{ t("Continue preparing for this role") }}</b><span>{{ t("Role information will be carried over automatically in the next feature.") }}</span></div>
+            <RouterLink :to="{ path: '/app/custom-resumes', query: { jobMatchId: result.id } }">{{ t("Generate role-customised CV") }}</RouterLink>
+            <RouterLink :to="{ path: '/app/interview', query: { jobMatchId: result.id } }">{{ t("Start role-play mock interview") }}</RouterLink>
           </div>
 
-          <div class="ai-reference-note">匹配结果仅基于当前简历呈现的信息，属于求职准备参考，不代表招聘方的实际筛选结论。</div>
+          <div class="ai-reference-note">{{ t("The match results are based only on the information presented in the current CV. They are a job preparation reference and do not represent the recruiter's actual screening conclusion.") }}</div>
         </template>
 
-        <div v-if="errorMessage" class="form-error diagnosis-error" role="alert">{{ errorMessage }}</div>
+        <div v-if="errorMessage" class="form-error diagnosis-error" role="alert">{{ t(errorMessage) }}</div>
       </template>
     </template>
   </section>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { computed, onMounted, reactive, ref } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 
@@ -111,17 +112,17 @@ const feedbackQuestion = computed(() => {
 const report = computed(() => session.value?.final_feedback ?? null)
 
 const dimensionLabels: Record<keyof DimensionScores, string> = {
-  relevance: '回答相关性',
-  specificity: '具体程度',
-  structure: '回答结构',
-  communication: '表达清晰度',
+  relevance: 'Answer relevance',
+  specificity: 'Level of detail',
+  structure: 'Answer structure',
+  communication: 'Clarity of expression',
 }
 
 const reportDimensionLabels: Record<keyof FinalReport['dimension_scores'], string> = {
-  expression: '表达能力',
-  role_understanding: '岗位理解',
-  experience_evidence: '经历证明',
-  answer_structure: '回答结构',
+  expression: 'Communication skills',
+  role_understanding: 'Job understanding',
+  experience_evidence: 'Experience evidence',
+  answer_structure: 'Answer structure',
 }
 
 const resetMessages = () => {
@@ -183,7 +184,7 @@ const loadPage = async () => {
     }
     if (sessionResponse.data) setScreenFromSession(sessionResponse.data)
   } catch (error) {
-    errorMessage.value = getApiErrorMessage(error, 'AI 面试页面加载失败')
+    errorMessage.value = getApiErrorMessage(error, 'Failed to load the AI interview page')
   } finally {
     loading.value = false
   }
@@ -192,7 +193,7 @@ const loadPage = async () => {
 const startInterview = async () => {
   resetMessages()
   if (!canStart.value) {
-    errorMessage.value = '请填写岗位名称'
+    errorMessage.value = 'Please enter the job title'
     return
   }
   generating.value = true
@@ -207,10 +208,10 @@ const startInterview = async () => {
     answerText.value = ''
     feedbackQuestionIndex.value = null
     screen.value = 'answer'
-    successMessage.value = '5 道岗位面试题已生成。'
+    successMessage.value = '5 interview questions for the role have been generated.'
     void router.replace({ path: '/agent/interview' })
   } catch (error) {
-    errorMessage.value = getApiErrorMessage(error, 'AI 暂时无法生成面试题，请稍后重试')
+    errorMessage.value = getApiErrorMessage(error, 'AI cannot generate interview questions right now. Please try again later.')
   } finally {
     generating.value = false
   }
@@ -220,7 +221,7 @@ const submitAnswer = async () => {
   if (!session.value || !currentQuestion.value) return
   resetMessages()
   if (!canSubmit.value) {
-    errorMessage.value = '回答不能少于 10 个有效字符'
+    errorMessage.value = 'The answer must contain at least 10 valid characters'
     return
   }
   submitting.value = true
@@ -234,13 +235,13 @@ const submitAnswer = async () => {
     answerText.value = ''
     if (response.data.status === 'completed') {
       screen.value = 'report'
-      successMessage.value = '五道题已完成，综合报告已生成。'
+      successMessage.value = 'All five questions completed, summary report generated.'
     } else {
       feedbackQuestionIndex.value = answeredIndex
       screen.value = 'feedback'
     }
   } catch (error) {
-    errorMessage.value = getApiErrorMessage(error, 'AI 暂时无法点评这次回答，请稍后重试')
+    errorMessage.value = getApiErrorMessage(error, 'The AI cannot review this answer at the moment, please try again later')
     try {
       const refreshed = await api.get<InterviewSession>(`/interviews/${session.value.id}`)
       session.value = refreshed.data
@@ -268,16 +269,16 @@ const retryReport = async () => {
     const response = await api.post<InterviewSession>(`/interviews/${session.value.id}/report`, undefined, { timeout: 90_000 })
     session.value = response.data
     screen.value = 'report'
-    successMessage.value = '综合报告已生成。'
+    successMessage.value = 'The overall report has been generated.'
   } catch (error) {
-    errorMessage.value = getApiErrorMessage(error, '综合报告生成失败，请稍后重试')
+    errorMessage.value = getApiErrorMessage(error, 'Failed to generate the overall report. Please try again later')
   } finally {
     retryingReport.value = false
   }
 }
 
 const abandonInterview = async () => {
-  if (!session.value || !window.confirm('确定结束本次面试吗？已经提交的回答会保留，但不会生成综合报告。')) return
+  if (!session.value || !window.confirm(t('End this interview? Submitted answers will be kept, but no overall report will be generated.'))) return
   resetMessages()
   abandoning.value = true
   try {
@@ -285,9 +286,9 @@ const abandonInterview = async () => {
     session.value = null
     resetForm()
     screen.value = 'prepare'
-    successMessage.value = '本次面试已结束，可以重新选择岗位。'
+    successMessage.value = 'This interview has ended. You can choose a job again.'
   } catch (error) {
-    errorMessage.value = getApiErrorMessage(error, '结束面试失败')
+    errorMessage.value = getApiErrorMessage(error, 'Failed to end interview')
   } finally {
     abandoning.value = false
   }
@@ -306,99 +307,99 @@ onMounted(loadPage)
 <template>
   <section class="interview-page">
     <div class="module-intro interview-intro">
-      <div><span class="eyebrow">AI INTERVIEW</span><h2>AI 模拟面试</h2><p>先确定本次目标岗位，再完成 5 道文字题。每题都有独立点评，全部完成后生成综合报告。</p></div>
-      <button v-if="session && screen === 'report'" class="save-button" type="button" @click="startNewInterview">开始新的面试</button>
+      <div><span class="eyebrow">{{ t("AI INTERVIEW") }}</span><h2>{{ t("AI Mock Interview") }}</h2><p>{{ t("First confirm the target role for this session, then complete 5 written questions. Each question has its own feedback, and a comprehensive report is generated once all are completed.") }}</p></div>
+      <button v-if="session && screen === 'report'" class="save-button" type="button" @click="startNewInterview">{{ t("Start a new interview") }}</button>
     </div>
 
-    <div v-if="loading" class="profile-loading">正在加载模拟面试…</div>
+    <div v-if="loading" class="profile-loading">{{ t("Loading mock interview…") }}</div>
     <template v-else>
       <div v-if="!resume" class="diagnosis-empty-card">
-        <span>01</span><h3>还没有主简历</h3><p>AI 会结合主简历生成岗位相关问题，请先上传一份真实简历。</p>
-        <RouterLink class="save-button diagnosis-main-button" to="/app/resume">去上传简历</RouterLink>
+        <span>01</span><h3>{{ t("No main CV yet") }}</h3><p>{{ t("The AI generates role-related questions based on the main CV. Please upload a real CV first.") }}</p>
+        <RouterLink class="save-button diagnosis-main-button" to="/app/resume">{{ t("Go to upload CV") }}</RouterLink>
       </div>
       <div v-else-if="!resume.confirmed_at" class="diagnosis-empty-card">
-        <span>02</span><h3>主简历文字尚未确认</h3><p>请先检查解析文字，再开始模拟面试。</p>
-        <RouterLink class="save-button diagnosis-main-button" to="/app/resume">去确认文字</RouterLink>
+        <span>02</span><h3>{{ t("Main CV text not yet confirmed") }}</h3><p>{{ t("Please check the parsed text before starting the mock interview.") }}</p>
+        <RouterLink class="save-button diagnosis-main-button" to="/app/resume">{{ t("Go to confirm text") }}</RouterLink>
       </div>
 
       <template v-else>
         <form v-if="screen === 'prepare'" class="job-match-form-card interview-prepare-card" @submit.prevent="startInterview">
-          <div class="job-match-form-heading"><div><span>本次岗位</span><h3>准备 5 道针对性面试题</h3></div><small>预计 10–20 分钟</small></div>
-          <div v-if="prefilledFromMatch" class="interview-prefill-note">已从岗位匹配结果带入信息，你仍可以在开始前修改。</div>
+          <div class="job-match-form-heading"><div><span>{{ t("This job") }}</span><h3>{{ t("Prepare 5 targeted interview questions") }}</h3></div><small>{{ t("Estimated 10–20 minutes") }}</small></div>
+          <div v-if="prefilledFromMatch" class="interview-prefill-note">{{ t("Information has been carried over from the job match result; you can still edit it before starting.") }}</div>
           <div class="job-basic-grid">
-            <label><span>岗位名称 <b>*</b></span><input v-model="form.job_title" maxlength="100" placeholder="例如：前端开发工程师" /></label>
-            <label><span>公司名称 <small>选填</small></span><input v-model="form.company_name" maxlength="100" placeholder="例如：某某科技" /></label>
+            <label><span>{{ t("Job title") }} <b>*</b></span><input v-model="form.job_title" maxlength="100" :placeholder="t('For example: Front-end Development Engineer')" /></label>
+            <label><span>{{ t("Company name") }} <small>{{ t("Optional") }}</small></span><input v-model="form.company_name" maxlength="100" :placeholder="t('For example: XX Technology')" /></label>
           </div>
-          <label class="job-jd-field"><span class="field-label">岗位要求 <small>选填</small></span>
-            <textarea v-model="form.job_requirements" maxlength="20000" placeholder="可以粘贴岗位职责和任职要求；不填写时会根据岗位名称生成通用岗位题。"></textarea>
-            <span class="field-count">{{ form.job_requirements.length.toLocaleString() }} / 20,000 字符</span>
+          <label class="job-jd-field"><span class="field-label">{{ t("Job requirements") }} <small>{{ t("Optional") }}</small></span>
+            <textarea v-model="form.job_requirements" maxlength="20000" :placeholder="t('You can paste the job responsibilities and requirements; if left blank, general role questions will be generated based on the job title.')"></textarea>
+            <span class="field-count">{{ t(form.job_requirements.length.toLocaleString()) }} {{ t("/ 20,000 characters") }}</span>
           </label>
-          <div v-if="!form.job_requirements.trim()" class="interview-specificity-hint">填写岗位要求后，专业题和情境题会更贴近实际招聘需求。</div>
+          <div v-if="!form.job_requirements.trim()" class="interview-specificity-hint">{{ t("Once you enter the job requirements, the professional and situational questions will be closer to real recruitment needs.") }}</div>
           <div class="job-form-footer">
-            <div><b>题目依据</b><span>{{ resume.original_name }} · 主简历版本 {{ resume.content_version }}</span></div>
-            <button class="save-button job-analyze-button" type="submit" :disabled="generating || !canStart">{{ generating ? '正在准备 5 道岗位题目…' : '确认岗位并生成面试题' }}</button>
+            <div><b>{{ t("Question basis") }}</b><span>{{ t(resume.original_name) }} {{ t("· Master CV version") }} {{ t(resume.content_version) }}</span></div>
+            <button class="save-button job-analyze-button" type="submit" :disabled="generating || !canStart">{{ t(generating ? 'Preparing 5 role-specific questions…' : 'Confirm the role and generate interview questions') }}</button>
           </div>
         </form>
 
         <template v-else-if="session">
           <div v-if="screen === 'answer' || screen === 'feedback'" class="interview-session-bar">
-            <div><span>{{ session.company_name || '目标岗位' }}</span><h3>{{ session.job_title }}</h3><small>基于主简历版本 {{ session.resume_version }}</small></div>
+            <div><span>{{ t(session.company_name || 'Target role') }}</span><h3>{{ t(session.job_title) }}</h3><small>{{ t("Based on master CV version") }} {{ t(session.resume_version) }}</small></div>
             <div class="interview-progress">
               <span v-for="index in 5" :key="index" :class="{ completed: index <= session.current_question_index, current: index === session.current_question_index + 1 }"></span>
-              <small>{{ Math.min(session.current_question_index + (screen === 'feedback' ? 0 : 1), 5) }} / 5</small>
+              <small>{{ t(Math.min(session.current_question_index + (screen === 'feedback' ? 0 : 1), 5)) }} / 5</small>
             </div>
-            <button type="button" :disabled="abandoning" @click="abandonInterview">{{ abandoning ? '结束中…' : '结束本次面试' }}</button>
+            <button type="button" :disabled="abandoning" @click="abandonInterview">{{ t(abandoning ? 'Ending…' : 'End this interview') }}</button>
           </div>
 
           <section v-if="screen === 'answer' && currentQuestion" class="interview-question-card">
-            <div class="interview-question-meta"><span>QUESTION {{ String(currentQuestion.sequence_no).padStart(2, '0') }}</span><b>{{ currentQuestion.focus_area }}</b></div>
-            <h3>{{ currentQuestion.question_text }}</h3>
-            <label><span>你的回答</span><textarea v-model="answerText" maxlength="5000" placeholder="建议用真实情境、你的行动和实际结果来回答…"></textarea></label>
-            <div class="interview-answer-footer"><small>{{ answerLength }} / 5,000 个有效字符</small><button class="save-button" type="button" :disabled="submitting || !canSubmit" @click="submitAnswer">{{ submitting ? '正在分析这次回答…' : session.current_question_index === 4 ? '提交并生成综合报告' : '提交回答' }}</button></div>
+            <div class="interview-question-meta"><span>{{ t("QUESTION") }} {{ t(String(currentQuestion.sequence_no).padStart(2, '0')) }}</span><b>{{ t(currentQuestion.focus_area) }}</b></div>
+            <h3>{{ t(currentQuestion.question_text) }}</h3>
+            <label><span>{{ t("Your answer") }}</span><textarea v-model="answerText" maxlength="5000" :placeholder="t('Answer using real situations, your actions and actual results…')"></textarea></label>
+            <div class="interview-answer-footer"><small>{{ t(answerLength) }} {{ t("/ 5,000 valid characters") }}</small><button class="save-button" type="button" :disabled="submitting || !canSubmit" @click="submitAnswer">{{ t(submitting ? 'Analysing this answer…' : session.current_question_index === 4 ? 'Submit and generate comprehensive report' : 'Submit answer') }}</button></div>
           </section>
 
           <section v-else-if="screen === 'feedback' && feedbackQuestion?.feedback" class="interview-feedback-stack">
             <div class="interview-feedback-hero">
-              <div class="interview-feedback-score"><span>本题得分</span><strong>{{ feedbackQuestion.feedback.score }}</strong><small>/ 100</small></div>
-              <div><span>QUESTION {{ String(feedbackQuestion.sequence_no).padStart(2, '0') }} · {{ feedbackQuestion.focus_area }}</span><h3>本题点评</h3><p>{{ feedbackQuestion.question_text }}</p></div>
+              <div class="interview-feedback-score"><span>{{ t("Score for this question") }}</span><strong>{{ t(feedbackQuestion.feedback.score) }}</strong><small>/ 100</small></div>
+              <div><span>{{ t("QUESTION") }} {{ t(String(feedbackQuestion.sequence_no).padStart(2, '0')) }} · {{ t(feedbackQuestion.focus_area) }}</span><h3>{{ t("Feedback for this question") }}</h3><p>{{ t(feedbackQuestion.question_text) }}</p></div>
             </div>
             <div class="interview-dimension-grid">
-              <article v-for="(score, key) in feedbackQuestion.feedback.dimension_scores" :key="key"><span>{{ dimensionLabels[key] }}</span><strong>{{ score }}</strong><div><i :style="{ width: `${score}%` }"></i></div></article>
+              <article v-for="(score, key) in feedbackQuestion.feedback.dimension_scores" :key="key"><span>{{ t(dimensionLabels[key]) }}</span><strong>{{ t(score) }}</strong><div><i :style="{ width: `${score}%` }"></i></div></article>
             </div>
             <div class="interview-feedback-columns">
-              <section class="interview-positive-card"><span>STRENGTHS</span><h3>回答优点</h3><ul><li v-for="item in feedbackQuestion.feedback.strengths" :key="item">{{ item }}</li></ul></section>
-              <section class="interview-issue-card"><span>ISSUES</span><h3>需要改进</h3><ul><li v-for="item in feedbackQuestion.feedback.issues" :key="item">{{ item }}</li></ul></section>
+              <section class="interview-positive-card"><span>{{ t("STRENGTHS") }}</span><h3>{{ t("Answer strengths") }}</h3><ul><li v-for="item in feedbackQuestion.feedback.strengths" :key="item">{{ t(item) }}</li></ul></section>
+              <section class="interview-issue-card"><span>{{ t("ISSUES") }}</span><h3>{{ t("Needs improvement") }}</h3><ul><li v-for="item in feedbackQuestion.feedback.issues" :key="item">{{ t(item) }}</li></ul></section>
             </div>
-            <section class="interview-suggestions-card"><div><span>NEXT ATTEMPT</span><h3>下次这样改</h3></div><ol><li v-for="item in feedbackQuestion.feedback.suggestions" :key="item">{{ item }}</li></ol></section>
-            <section class="interview-outline-card"><span>回答结构参考</span><div><i v-for="(item, index) in feedbackQuestion.feedback.answer_outline" :key="item"><b>{{ index + 1 }}</b>{{ item }}</i></div></section>
-            <button class="save-button interview-next-button" type="button" @click="continueInterview">进入第 {{ session.current_question_index + 1 }} 题 →</button>
+            <section class="interview-suggestions-card"><div><span>{{ t("NEXT ATTEMPT") }}</span><h3>{{ t("Change it like this next time") }}</h3></div><ol><li v-for="item in feedbackQuestion.feedback.suggestions" :key="item">{{ t(item) }}</li></ol></section>
+            <section class="interview-outline-card"><span>{{ t("Answer structure reference") }}</span><div><i v-for="(item, index) in feedbackQuestion.feedback.answer_outline" :key="item"><b>{{ t(index + 1) }}</b>{{ t(item) }}</i></div></section>
+            <button class="save-button interview-next-button" type="button" @click="continueInterview">{{ t("Enter the") }} {{ t(session.current_question_index + 1) }} {{ t("question →") }}</button>
           </section>
 
           <section v-else-if="screen === 'reporting'" class="interview-reporting-card">
-            <span>5 / 5</span><h3>五道回答已经全部保存</h3><p>综合报告暂时没有生成成功。无需重新答题，直接重试即可。</p>
-            <button class="save-button" type="button" :disabled="retryingReport" @click="retryReport">{{ retryingReport ? '正在生成综合报告…' : '重新生成综合报告' }}</button>
+            <span>5 / 5</span><h3>{{ t("All five answers saved") }}</h3><p>{{ t("The overall report could not be generated for now. No need to answer again — just retry.") }}</p>
+            <button class="save-button" type="button" :disabled="retryingReport" @click="retryReport">{{ t(retryingReport ? 'Generating comprehensive report…' : 'Regenerate the comprehensive report') }}</button>
           </section>
 
           <section v-else-if="screen === 'report' && report" class="interview-report-stack">
             <div class="interview-report-hero">
-              <div class="interview-report-score"><span>综合表现</span><strong>{{ report.overall_score }}</strong><small>/ 100</small></div>
-              <div><span>INTERVIEW REPORT</span><h3>{{ session.job_title }} · 模拟面试报告</h3><p>{{ report.summary }}</p><small>已完成 5 道文字面试题</small></div>
+              <div class="interview-report-score"><span>{{ t("Overall performance") }}</span><strong>{{ t(report.overall_score) }}</strong><small>/ 100</small></div>
+              <div><span>{{ t("INTERVIEW REPORT") }}</span><h3>{{ t(session.job_title) }} {{ t("· Mock interview report") }}</h3><p>{{ t(report.summary) }}</p><small>{{ t("Completed 5 written interview questions") }}</small></div>
             </div>
             <div class="interview-report-dimensions">
-              <article v-for="(score, key) in report.dimension_scores" :key="key"><span>{{ reportDimensionLabels[key] }}</span><strong>{{ score }}</strong><div><i :style="{ width: `${score}%` }"></i></div></article>
+              <article v-for="(score, key) in report.dimension_scores" :key="key"><span>{{ t(reportDimensionLabels[key]) }}</span><strong>{{ t(score) }}</strong><div><i :style="{ width: `${score}%` }"></i></div></article>
             </div>
             <div class="interview-report-columns">
-              <section><span>WHAT WENT WELL</span><h3>表现较好</h3><ul><li v-for="item in report.strengths" :key="item">{{ item }}</li></ul></section>
-              <section><span>PRIORITY IMPROVEMENTS</span><h3>重点改进</h3><ul><li v-for="item in report.improvements" :key="item">{{ item }}</li></ul></section>
+              <section><span>{{ t("WHAT WENT WELL") }}</span><h3>{{ t("Performs well") }}</h3><ul><li v-for="item in report.strengths" :key="item">{{ t(item) }}</li></ul></section>
+              <section><span>{{ t("PRIORITY IMPROVEMENTS") }}</span><h3>{{ t("Key improvements") }}</h3><ul><li v-for="item in report.improvements" :key="item">{{ t(item) }}</li></ul></section>
             </div>
-            <section class="interview-practice-card"><div><span>PRACTICE PLAN</span><h3>下一步练习重点</h3></div><ol><li v-for="(item, index) in report.practice_focus" :key="item"><b>{{ String(index + 1).padStart(2, '0') }}</b>{{ item }}</li></ol></section>
-            <div class="interview-report-actions"><RouterLink to="/app">返回工作台</RouterLink><button class="save-button" type="button" @click="startNewInterview">重新开始一次面试</button></div>
-            <div class="ai-reference-note">模拟面试报告用于辅助练习，不代表真实招聘方的评价或录用结论。</div>
+            <section class="interview-practice-card"><div><span>{{ t("PRACTICE PLAN") }}</span><h3>{{ t("Focus for the next practice session") }}</h3></div><ol><li v-for="(item, index) in report.practice_focus" :key="item"><b>{{ t(String(index + 1).padStart(2, '0')) }}</b>{{ t(item) }}</li></ol></section>
+            <div class="interview-report-actions"><RouterLink to="/app">{{ t("Return to workspace") }}</RouterLink><button class="save-button" type="button" @click="startNewInterview">{{ t("Start a new interview") }}</button></div>
+            <div class="ai-reference-note">{{ t("The mock interview report is for practice purposes and does not represent a real recruiter's assessment or hiring decision.") }}</div>
           </section>
         </template>
 
-        <div v-if="successMessage" class="form-success custom-page-message" role="status">{{ successMessage }}</div>
-        <div v-if="errorMessage" class="form-error diagnosis-error custom-page-message" role="alert">{{ errorMessage }}</div>
+        <div v-if="successMessage" class="form-success custom-page-message" role="status">{{ t(successMessage) }}</div>
+        <div v-if="errorMessage" class="form-error diagnosis-error custom-page-message" role="alert">{{ t(errorMessage) }}</div>
       </template>
     </template>
   </section>

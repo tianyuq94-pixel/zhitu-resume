@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
@@ -66,7 +67,7 @@ const loadProfile = async () => {
     form.job_type = profile.job_type ?? ''
     citiesText.value = profile.desired_cities.join('、')
   } catch (error) {
-    errorMessage.value = getApiErrorMessage(error, '个人资料加载失败')
+    errorMessage.value = getApiErrorMessage(error, 'Failed to load personal details')
   } finally {
     loading.value = false
   }
@@ -87,9 +88,9 @@ const saveProfile = async () => {
       await router.replace(continueTarget.value)
       return
     }
-    successMessage.value = '求职档案已保存'
+    successMessage.value = 'Job search profile saved'
   } catch (error) {
-    errorMessage.value = getApiErrorMessage(error, '保存失败，请稍后重试')
+    errorMessage.value = getApiErrorMessage(error, 'Save failed, please try again later')
   } finally {
     saving.value = false
   }
@@ -99,7 +100,7 @@ const changePassword = async () => {
   passwordError.value = ''
   passwordSuccess.value = ''
   if (passwordForm.new_password !== passwordForm.confirm_password) {
-    passwordError.value = '两次输入的新密码不一致'
+    passwordError.value = 'The two new passwords entered do not match'
     return
   }
   changingPassword.value = true
@@ -111,9 +112,9 @@ const changePassword = async () => {
     passwordForm.current_password = ''
     passwordForm.new_password = ''
     passwordForm.confirm_password = ''
-    passwordSuccess.value = '密码已更新，其他设备上的旧登录已失效'
+    passwordSuccess.value = 'Password updated; old logins on other devices have been invalidated'
   } catch (error) {
-    passwordError.value = getApiErrorMessage(error, '密码修改失败')
+    passwordError.value = getApiErrorMessage(error, 'Failed to change password')
   } finally {
     changingPassword.value = false
   }
@@ -125,51 +126,51 @@ onMounted(loadProfile)
 <template>
   <section class="profile-page">
     <div class="module-intro profile-intro">
-      <span class="eyebrow">CAREER PROFILE</span>
-      <h2>{{ isOnboarding ? '先完善你的求职档案' : '个人资料' }}</h2>
-      <p>{{ continueTarget ? '使用这项 AI 功能前，请先补充必要信息；保存后会自动继续。' : '这些信息会帮助 AI 理解你的背景和求职目标。未填写的内容不会被 AI 擅自补充。' }}</p>
+      <span class="eyebrow">{{ t("CAREER PROFILE") }}</span>
+      <h2>{{ t(isOnboarding ? 'Complete your job-seeking profile first' : 'Personal details') }}</h2>
+      <p>{{ t(continueTarget ? 'Before using this AI feature, please add the necessary information; once saved, it will continue automatically.' : 'This information helps the AI understand your background and job goals. Anything you leave blank will not be filled in by the AI on its own.') }}</p>
     </div>
 
-    <div v-if="loading" class="profile-loading">正在加载个人资料…</div>
+    <div v-if="loading" class="profile-loading">{{ t("Loading profile…") }}</div>
     <template v-else>
       <form class="profile-card" @submit.prevent="saveProfile">
         <div class="card-heading">
-          <div><span>01</span><h3>求职档案</h3></div>
-          <small>带 * 的信息用于判断档案是否完整</small>
+          <div><span>01</span><h3>{{ t("Job search profile") }}</h3></div>
+          <small>{{ t("Fields marked * are used to determine whether the profile is complete") }}</small>
         </div>
 
         <div class="profile-form-grid">
-          <label><span>姓名</span><input v-model="form.real_name" maxlength="50" placeholder="选填，仅用于简历内容" /></label>
-          <label><span>学校 *</span><input v-model="form.school" maxlength="100" placeholder="例如：复旦大学" required /></label>
-          <label><span>专业 *</span><input v-model="form.major" maxlength="100" placeholder="例如：计算机科学与技术" required /></label>
+          <label><span>{{ t("Name") }}</span><input v-model="form.real_name" maxlength="50" :placeholder="t('Optional, used only for CV content')" /></label>
+          <label><span>{{ t("School *") }}</span><input v-model="form.school" maxlength="100" :placeholder="t('For example: Fudan University')" required /></label>
+          <label><span>{{ t("Specialism *") }}</span><input v-model="form.major" maxlength="100" :placeholder="t('For example: Computer Science and Technology')" required /></label>
           <label>
-            <span>学历 *</span>
-            <select v-model="form.degree" required><option value="" disabled>请选择</option><option>专科</option><option>本科</option><option>硕士</option><option>博士</option></select>
+            <span>{{ t("Education *") }}</span>
+            <select v-model="form.degree" required><option value="" disabled>{{ t("Please select") }}</option><option value="专科">{{ t("Diploma") }}</option><option value="本科">{{ t("Bachelor’s") }}</option><option value="硕士">{{ t("Master’s") }}</option><option value="博士">{{ t("Doctorate") }}</option></select>
           </label>
-          <label><span>毕业年份 *</span><input v-model.number="form.graduation_year" type="number" min="2000" max="2100" placeholder="例如：2027" required /></label>
-          <label><span>求职方向 *</span><input v-model="form.career_direction" maxlength="100" placeholder="例如：前端开发" required /></label>
-          <label><span>意向城市</span><input v-model="citiesText" maxlength="100" placeholder="例如：福州、厦门、深圳" /></label>
+          <label><span>{{ t("Graduation year *") }}</span><input v-model.number="form.graduation_year" type="number" min="2000" max="2100" :placeholder="t('For example: 2027')" required /></label>
+          <label><span>{{ t("Target role *") }}</span><input v-model="form.career_direction" maxlength="100" :placeholder="t('For example: front-end development')" required /></label>
+          <label><span>{{ t("Preferred cities") }}</span><input v-model="citiesText" maxlength="100" :placeholder="t('For example: Fuzhou, Xiamen, Shenzhen')" /></label>
           <label>
-            <span>求职类型 *</span>
-            <select v-model="form.job_type" required><option value="" disabled>请选择</option><option>校招</option><option>社招</option><option>实习</option></select>
+            <span>{{ t("Job type *") }}</span>
+            <select v-model="form.job_type" required><option value="" disabled>{{ t("Please select") }}</option><option value="校招">{{ t("Graduate role") }}</option><option value="社招">{{ t("Experienced role") }}</option><option value="实习">{{ t("Internship") }}</option></select>
           </label>
         </div>
 
-        <div v-if="errorMessage" class="form-error" role="alert">{{ errorMessage }}</div>
-        <div v-if="successMessage" class="form-success" role="status">{{ successMessage }}</div>
-        <div class="profile-actions"><button class="save-button" type="submit" :disabled="saving">{{ saving ? '保存中…' : continueTarget ? '保存并继续' : '保存求职档案' }}</button></div>
+        <div v-if="errorMessage" class="form-error" role="alert">{{ t(errorMessage) }}</div>
+        <div v-if="successMessage" class="form-success" role="status">{{ t(successMessage) }}</div>
+        <div class="profile-actions"><button class="save-button" type="submit" :disabled="saving">{{ t(saving ? 'Saving…' : continueTarget ? 'Save and continue' : 'Save job profile') }}</button></div>
       </form>
 
       <form class="profile-card password-card" @submit.prevent="changePassword">
-        <div class="card-heading"><div><span>02</span><h3>修改密码</h3></div><small>修改后其他设备需要重新登录</small></div>
+        <div class="card-heading"><div><span>02</span><h3>{{ t("Change password") }}</h3></div><small>{{ t("After changing, other devices will need to sign in again") }}</small></div>
         <div class="profile-form-grid password-grid">
-          <label><span>当前密码</span><input v-model="passwordForm.current_password" type="password" autocomplete="current-password" required /></label>
-          <label><span>新密码</span><input v-model="passwordForm.new_password" type="password" autocomplete="new-password" minlength="8" maxlength="128" required /></label>
-          <label><span>确认新密码</span><input v-model="passwordForm.confirm_password" type="password" autocomplete="new-password" minlength="8" maxlength="128" required /></label>
+          <label><span>{{ t("Current password") }}</span><input v-model="passwordForm.current_password" type="password" autocomplete="current-password" required /></label>
+          <label><span>{{ t("New password") }}</span><input v-model="passwordForm.new_password" type="password" autocomplete="new-password" minlength="8" maxlength="128" required /></label>
+          <label><span>{{ t("Confirm new password") }}</span><input v-model="passwordForm.confirm_password" type="password" autocomplete="new-password" minlength="8" maxlength="128" required /></label>
         </div>
-        <div v-if="passwordError" class="form-error" role="alert">{{ passwordError }}</div>
-        <div v-if="passwordSuccess" class="form-success" role="status">{{ passwordSuccess }}</div>
-        <div class="profile-actions"><button class="secondary-save-button" type="submit" :disabled="changingPassword">{{ changingPassword ? '修改中…' : '修改密码' }}</button></div>
+        <div v-if="passwordError" class="form-error" role="alert">{{ t(passwordError) }}</div>
+        <div v-if="passwordSuccess" class="form-success" role="status">{{ t(passwordSuccess) }}</div>
+        <div class="profile-actions"><button class="secondary-save-button" type="submit" :disabled="changingPassword">{{ t(changingPassword ? 'Editing…' : 'Change password') }}</button></div>
       </form>
     </template>
   </section>

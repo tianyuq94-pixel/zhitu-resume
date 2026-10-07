@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t, locale } from '@/i18n'
 import { computed, onMounted, reactive, ref } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 
@@ -53,7 +54,7 @@ type CustomResumeSummary = {
 
 type CustomResume = CustomResumeSummary & {
   job_description: string
-  template_name: '简历模板'
+  template_name: 'CV template'
   header: ResumeHeader
   sections: CustomSection[]
   missing_information_warnings: string[]
@@ -99,7 +100,7 @@ const photoUrl = computed(() => current.value?.header.has_photo
 
 const formatDate = (value: string) => {
   const utcValue = /(?:Z|[+-]\d{2}:\d{2})$/.test(value) ? value : `${value}Z`
-  return new Intl.DateTimeFormat('zh-CN', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(utcValue))
+  return new Intl.DateTimeFormat(locale.value === 'zh' ? 'zh-CN' : 'en-GB', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(utcValue))
 }
 
 const resetMessages = () => {
@@ -143,7 +144,7 @@ const loadPage = async () => {
       }
     }
   } catch (error) {
-    errorMessage.value = getApiErrorMessage(error, '定制简历页面加载失败')
+    errorMessage.value = getApiErrorMessage(error, 'Failed to load the customised CV page')
   } finally {
     loading.value = false
   }
@@ -166,7 +167,7 @@ const backToList = () => {
 const generateResume = async () => {
   resetMessages()
   if (!canGenerate.value) {
-    errorMessage.value = '请填写岗位名称，并输入不少于 30 个有效字符的岗位 JD'
+    errorMessage.value = 'Please enter the job title and a job description of at least 30 valid characters'
     return
   }
   generating.value = true
@@ -182,9 +183,9 @@ const generateResume = async () => {
     current.value = response.data
     versions.value = [response.data, ...versions.value.filter((item) => item.id !== response.data.id)]
     pageMode.value = 'editor'
-    successMessage.value = '定制简历已生成。补充基本信息并确认内容后即可导出成品。'
+    successMessage.value = 'Customised CV generated. Add your basic details and confirm the content, then you can export the finished version.'
   } catch (error) {
-    errorMessage.value = getApiErrorMessage(error, 'AI 定制简历生成失败，请稍后重试')
+    errorMessage.value = getApiErrorMessage(error, 'Failed to generate the AI customised CV, please try again later')
   } finally {
     generating.value = false
   }
@@ -198,7 +199,7 @@ const openVersion = async (id: number) => {
     photoVersion.value += 1
     pageMode.value = 'editor'
   } catch (error) {
-    errorMessage.value = getApiErrorMessage(error, '定制简历加载失败')
+    errorMessage.value = getApiErrorMessage(error, 'Failed to load customised CV')
   }
 }
 
@@ -248,12 +249,12 @@ const saveResume = async () => {
     const index = versions.value.findIndex((item) => item.id === response.data.id)
     if (index >= 0) versions.value[index] = response.data
     successMessage.value = response.data.status === 'ready'
-      ? '成品简历已保存，可以导出 PDF 或 Word。'
+      ? 'The final CV has been saved; you can export it as PDF or Word.'
       : !response.data.header.name
-        ? '草稿已保存，请填写姓名后再次保存。'
-        : `草稿已保存，还有 ${response.data.pending_count} 条建议待处理。`
+        ? 'Draft saved. Please enter a name and save again.'
+        : `Draft saved. There are still ${response.data.pending_count} suggestions to handle.`
   } catch (error) {
-    errorMessage.value = getApiErrorMessage(error, '定制简历保存失败')
+    errorMessage.value = getApiErrorMessage(error, 'Failed to save customised CV')
   } finally {
     saving.value = false
   }
@@ -263,7 +264,7 @@ const exportPdf = async () => {
   if (!current.value) return
   resetMessages()
   if (!headerComplete.value || pendingCount.value > 0 || current.value.status !== 'ready') {
-    errorMessage.value = '请填写姓名、处理完全部建议并保存，再导出 PDF'
+    errorMessage.value = 'Please enter your name, process all suggestions and save, then export PDF'
     return
   }
   exporting.value = true
@@ -275,12 +276,12 @@ const exportPdf = async () => {
     const url = URL.createObjectURL(response.data)
     const anchor = document.createElement('a')
     anchor.href = url
-    anchor.download = `${current.value.job_title}-定制简历.pdf`
+    anchor.download = `${current.value.job_title}-customised-CV.pdf`
     anchor.click()
     URL.revokeObjectURL(url)
-    successMessage.value = 'PDF 已导出。'
+    successMessage.value = 'PDF exported.'
   } catch (error) {
-    errorMessage.value = getApiErrorMessage(error, 'PDF 导出失败')
+    errorMessage.value = getApiErrorMessage(error, 'PDF export failed')
   } finally {
     exporting.value = false
   }
@@ -290,7 +291,7 @@ const exportWord = async () => {
   if (!current.value) return
   resetMessages()
   if (!headerComplete.value || pendingCount.value > 0 || current.value.status !== 'ready') {
-    errorMessage.value = '请填写姓名、处理完全部建议并保存，再导出 Word'
+    errorMessage.value = 'Please enter your name, process all suggestions and save, then export Word'
     return
   }
   exportingWord.value = true
@@ -302,12 +303,12 @@ const exportWord = async () => {
     const url = URL.createObjectURL(response.data)
     const anchor = document.createElement('a')
     anchor.href = url
-    anchor.download = `${current.value.job_title}-定制简历.docx`
+    anchor.download = `${current.value.job_title}-customised-CV.docx`
     anchor.click()
     URL.revokeObjectURL(url)
-    successMessage.value = 'Word 已导出，可以继续修改。'
+    successMessage.value = 'Word exported. You can continue editing.'
   } catch (error) {
-    errorMessage.value = getApiErrorMessage(error, 'Word 导出失败')
+    errorMessage.value = getApiErrorMessage(error, 'Word export failed')
   } finally {
     exportingWord.value = false
   }
@@ -323,7 +324,7 @@ const onPhotoSelected = async (event: Event) => {
   if (!file) return
   resetMessages()
   if (!['image/jpeg', 'image/png'].includes(file.type) || file.size > 2 * 1024 * 1024) {
-    errorMessage.value = '证件照只支持不超过 2 MB 的 JPG 或 PNG 图片'
+    errorMessage.value = 'ID photo only supports JPG or PNG images up to 2 MB'
     return
   }
   photoBusy.value = true
@@ -333,9 +334,9 @@ const onPhotoSelected = async (event: Event) => {
     await api.post<CustomResume>(`/custom-resumes/${current.value.id}/photo`, data)
     current.value.header.has_photo = true
     photoVersion.value += 1
-    successMessage.value = '证件照已加入简历。'
+    successMessage.value = 'ID photo added to CV.'
   } catch (error) {
-    errorMessage.value = getApiErrorMessage(error, '证件照上传失败')
+    errorMessage.value = getApiErrorMessage(error, 'ID photo upload failed')
   } finally {
     photoBusy.value = false
   }
@@ -349,25 +350,25 @@ const removePhoto = async () => {
     await api.delete(`/custom-resumes/${current.value.id}/photo`)
     current.value.header.has_photo = false
     photoVersion.value += 1
-    successMessage.value = '证件照已移除。'
+    successMessage.value = 'ID photo removed.'
   } catch (error) {
-    errorMessage.value = getApiErrorMessage(error, '证件照移除失败')
+    errorMessage.value = getApiErrorMessage(error, 'Failed to remove ID photo')
   } finally {
     photoBusy.value = false
   }
 }
 
 const deleteVersion = async (item: CustomResumeSummary) => {
-  if (!window.confirm(`确定删除“${item.job_title}”定制简历吗？删除后无法恢复。`)) return
+  if (!window.confirm(t(`Delete the customised CV for "${item.job_title}"? This cannot be undone.`))) return
   resetMessages()
   deletingId.value = item.id
   try {
     await api.delete(`/custom-resumes/${item.id}`)
     versions.value = versions.value.filter((version) => version.id !== item.id)
     if (current.value?.id === item.id) backToList()
-    successMessage.value = '定制简历已删除。'
+    successMessage.value = 'Customised CV deleted.'
   } catch (error) {
-    errorMessage.value = getApiErrorMessage(error, '定制简历删除失败')
+    errorMessage.value = getApiErrorMessage(error, 'Failed to delete customised CV')
   } finally {
     deletingId.value = null
   }
@@ -380,25 +381,25 @@ onMounted(loadPage)
   <section class="custom-resume-page">
     <div class="module-intro custom-resume-intro">
       <div>
-        <span class="eyebrow">TAILORED RESUME</span>
-        <h2>岗位定制简历</h2>
-        <p>围绕目标岗位重新组织主简历中的真实内容。每一处 AI 改写都由你决定是否采用。</p>
+        <span class="eyebrow">{{ t("TAILORED RESUME") }}</span>
+        <h2>{{ t("Job-tailored CV") }}</h2>
+        <p>{{ t("Reorganise the real content from your master CV around the target role. You decide whether to accept each AI rewrite.") }}</p>
       </div>
       <button v-if="pageMode !== 'create' && resume?.confirmed_at" class="save-button" type="button" @click="startCreate">
-        创建新版本
+        {{ t("Create new version") }}
       </button>
     </div>
 
-    <div v-if="loading" class="profile-loading">正在加载定制简历…</div>
+    <div v-if="loading" class="profile-loading">{{ t("Loading tailored CV…") }}</div>
     <template v-else>
       <div v-if="!resume" class="diagnosis-empty-card">
-        <span>01</span><h3>还没有主简历</h3><p>定制版本必须从一份真实主简历开始。</p>
-        <RouterLink class="save-button diagnosis-main-button" to="/app/resume">去上传简历</RouterLink>
+        <span>01</span><h3>{{ t("No main CV yet") }}</h3><p>{{ t("A customised version must start from a genuine master CV.") }}</p>
+        <RouterLink class="save-button diagnosis-main-button" to="/app/resume">{{ t("Go to upload CV") }}</RouterLink>
       </div>
 
       <div v-else-if="!resume.confirmed_at" class="diagnosis-empty-card">
-        <span>02</span><h3>主简历文字尚未确认</h3><p>请先检查解析文字，再生成岗位定制版本。</p>
-        <RouterLink class="save-button diagnosis-main-button" to="/app/resume">去确认文字</RouterLink>
+        <span>02</span><h3>{{ t("Main CV text not yet confirmed") }}</h3><p>{{ t("Please check the parsed text before generating the customised version for the role.") }}</p>
+        <RouterLink class="save-button diagnosis-main-button" to="/app/resume">{{ t("Go to confirm text") }}</RouterLink>
       </div>
 
       <template v-else>
@@ -406,114 +407,114 @@ onMounted(loadPage)
           <div v-if="versions.length" class="custom-version-grid">
             <article v-for="item in versions" :key="item.id" class="custom-version-card">
               <div class="custom-version-topline">
-                <span :class="['custom-status', item.status]">{{ item.status === 'ready' ? '已确认' : '待确认' }}</span>
+                <span :class="['custom-status', item.status]">{{ t(item.status === 'ready' ? 'Confirmed' : 'To confirm') }}</span>
                 <button type="button" :disabled="deletingId === item.id" @click="deleteVersion(item)">
-                  {{ deletingId === item.id ? '删除中' : '删除' }}
+                  {{ t(deletingId === item.id ? 'Deleting' : 'Delete') }}
                 </button>
               </div>
-              <small>{{ item.company_name || '目标岗位' }}</small>
-              <h3>{{ item.job_title }}</h3>
-              <p>基于主简历内容版本 {{ item.source_resume_version }}</p>
-              <div><span>{{ item.pending_count ? `${item.pending_count} 条建议待处理` : '全部建议已处理' }}</span><span>{{ formatDate(item.updated_at) }}</span></div>
-              <button class="custom-open-button" type="button" @click="openVersion(item.id)">打开版本 →</button>
+              <small>{{ t(item.company_name || 'Target role') }}</small>
+              <h3>{{ t(item.job_title) }}</h3>
+              <p>{{ t("Based on master CV content version") }} {{ t(item.source_resume_version) }}</p>
+              <div><span>{{ t(item.pending_count ? `${item.pending_count} suggestions pending` : 'All suggestions processed') }}</span><span>{{ t(formatDate(item.updated_at)) }}</span></div>
+              <button class="custom-open-button" type="button" @click="openVersion(item.id)">{{ t("Open version →") }}</button>
             </article>
           </div>
           <div v-else class="custom-empty-state">
-            <span>TAILOR YOUR STORY</span>
-            <h3>还没有岗位定制简历</h3>
-            <p>输入目标岗位，AI 会基于主简历生成逐条可确认的改写建议，并保存为独立版本。</p>
-            <button class="save-button" type="button" @click="startCreate">创建第一份定制简历</button>
+            <span>{{ t("TAILOR YOUR STORY") }}</span>
+            <h3>{{ t("No role-specific CV yet") }}</h3>
+            <p>{{ t("Enter the target role and the AI will generate line-by-line rewrite suggestions based on your main CV for you to confirm, saving them as a separate version.") }}</p>
+            <button class="save-button" type="button" @click="startCreate">{{ t("Create your first customised CV") }}</button>
           </div>
         </section>
 
         <form v-else-if="pageMode === 'create'" class="job-match-form-card custom-create-card" @submit.prevent="generateResume">
           <div class="job-match-form-heading">
-            <div><span>目标岗位</span><h3>创建一份新的定制简历</h3></div>
-            <button type="button" @click="backToList">返回版本列表</button>
+            <div><span>{{ t("Target role") }}</span><h3>{{ t("Create a new customised CV") }}</h3></div>
+            <button type="button" @click="backToList">{{ t("Return to version list") }}</button>
           </div>
 
           <div v-if="prefilledFromMatch" class="custom-prefill-note">
-            已从刚才的岗位匹配结果带入岗位信息。生成内容仍只使用主简历中的真实事实。
+            {{ t("Job information has been carried over from the previous job match result. The generated content still only uses real facts from the master CV.") }}
           </div>
           <div class="job-basic-grid">
-            <label><span>岗位名称 <b>*</b></span><input v-model="form.job_title" maxlength="100" placeholder="例如：前端开发工程师" :disabled="prefilledFromMatch" /></label>
-            <label><span>公司名称 <small>选填</small></span><input v-model="form.company_name" maxlength="100" placeholder="例如：某某科技" :disabled="prefilledFromMatch" /></label>
+            <label><span>{{ t("Job title") }} <b>*</b></span><input v-model="form.job_title" maxlength="100" :placeholder="t('For example: Front-end Development Engineer')" :disabled="prefilledFromMatch" /></label>
+            <label><span>{{ t("Company name") }} <small>{{ t("Optional") }}</small></span><input v-model="form.company_name" maxlength="100" :placeholder="t('For example: XX Technology')" :disabled="prefilledFromMatch" /></label>
           </div>
-          <label class="job-jd-field"><span class="field-label">岗位 JD <b>*</b></span>
-            <textarea v-model="form.job_description" maxlength="20000" placeholder="粘贴岗位职责、任职要求和加分项…" :disabled="prefilledFromMatch"></textarea>
-            <span class="field-count">{{ effectiveJdLength.toLocaleString() }} / 20,000 个有效字符</span>
+          <label class="job-jd-field"><span class="field-label">{{ t("Role JD") }} <b>*</b></span>
+            <textarea v-model="form.job_description" maxlength="20000" :placeholder="t('Paste the job responsibilities, requirements and desirable criteria…')" :disabled="prefilledFromMatch"></textarea>
+            <span class="field-count">{{ t(effectiveJdLength.toLocaleString()) }} {{ t("/ 20,000 valid characters") }}</span>
           </label>
           <div class="job-form-footer">
-            <div><b>内容来源</b><span>{{ resume.original_name }} · 内容版本 {{ resume.content_version }}</span></div>
+            <div><b>{{ t("Content source") }}</b><span>{{ t(resume.original_name) }} {{ t("· Content version") }} {{ t(resume.content_version) }}</span></div>
             <button class="save-button job-analyze-button" type="submit" :disabled="generating || !canGenerate">
-              {{ generating ? '正在生成定制简历…' : '生成定制简历' }}
+              {{ t(generating ? 'Generating tailored CV…' : 'Generate customised CV') }}
             </button>
           </div>
         </form>
 
         <template v-else-if="current">
           <div class="custom-editor-header">
-            <button type="button" @click="backToList">← 返回版本列表</button>
-            <div><span>{{ current.company_name || '目标岗位' }}</span><h3>{{ current.job_title }}</h3><small>基于主简历内容版本 {{ current.source_resume_version }}</small></div>
+            <button type="button" @click="backToList">{{ t("← Back to the version list") }}</button>
+            <div><span>{{ t(current.company_name || 'Target role') }}</span><h3>{{ t(current.job_title) }}</h3><small>{{ t("Based on master CV content version") }} {{ t(current.source_resume_version) }}</small></div>
             <div class="custom-editor-actions">
-              <button type="button" @click="applyAll('rejected')">全部保留原文</button>
-              <button type="button" @click="applyAll('accepted')">全部采纳建议</button>
-              <button class="save-button" type="button" :disabled="saving" @click="saveResume">{{ saving ? '保存中…' : '保存版本' }}</button>
-              <button class="custom-word-export-button" type="button" :disabled="exporting || exportingWord || current.status !== 'ready'" @click="exportWord">{{ exportingWord ? '导出中…' : '导出 Word' }}</button>
-              <button class="custom-export-button" type="button" :disabled="exporting || exportingWord || current.status !== 'ready'" @click="exportPdf">{{ exporting ? '导出中…' : '导出 PDF' }}</button>
+              <button type="button" @click="applyAll('rejected')">{{ t("Keep all original text") }}</button>
+              <button type="button" @click="applyAll('accepted')">{{ t("Accept all suggestions") }}</button>
+              <button class="save-button" type="button" :disabled="saving" @click="saveResume">{{ t(saving ? 'Saving…' : 'Save version') }}</button>
+              <button class="custom-word-export-button" type="button" :disabled="exporting || exportingWord || current.status !== 'ready'" @click="exportWord">{{ t(exportingWord ? 'Exporting…' : 'Export Word') }}</button>
+              <button class="custom-export-button" type="button" :disabled="exporting || exportingWord || current.status !== 'ready'" @click="exportPdf">{{ t(exporting ? 'Exporting…' : 'Export PDF') }}</button>
             </div>
           </div>
 
           <div class="custom-progress-card">
-            <div><strong>{{ totalItems - pendingCount }}</strong><span>/ {{ totalItems }} 条已处理</span></div>
-            <p>{{ pendingCount ? `还有 ${pendingCount} 条建议需要采纳、保留或手动修改。` : '全部建议已处理，保存后即可导出。' }}</p>
+            <div><strong>{{ t(totalItems - pendingCount) }}</strong><span>/ {{ t(totalItems) }} {{ t("items processed") }}</span></div>
+            <p>{{ t(pendingCount ? `There are still ${pendingCount} suggestions to accept, keep or edit manually.` : 'All suggestions processed; export once saved.') }}</p>
           </div>
 
           <section v-if="current.missing_information_warnings.length" class="custom-warning-card">
-            <div><span>NOT IN RESUME</span><h3>不能直接添加的岗位要求</h3></div>
-            <ul><li v-for="warning in current.missing_information_warnings" :key="warning">{{ warning }}</li></ul>
+            <div><span>{{ t("NOT IN RESUME") }}</span><h3>{{ t("Job requirements that cannot be added directly") }}</h3></div>
+            <ul><li v-for="warning in current.missing_information_warnings" :key="warning">{{ t(warning) }}</li></ul>
           </section>
 
           <div class="custom-workspace-grid">
             <div class="custom-review-column">
               <section class="resume-header-editor">
                 <div class="resume-header-editor-title">
-                  <div><span>简历模板</span><h3>基本信息与证件照</h3></div>
-                  <small>识别结果可以直接修改，姓名为导出必填项。</small>
+                  <div><span>{{ t("CV template") }}</span><h3>{{ t("Basic information and ID photo") }}</h3></div>
+                  <small>{{ t("Results can be edited directly; name is required for export.") }}</small>
                 </div>
                 <div class="resume-header-form">
-                  <label><span>姓名 <b>*</b></span><input v-model="current.header.name" maxlength="40" placeholder="请输入真实姓名" /></label>
-                  <label><span>政治面貌</span><input v-model="current.header.political_status" maxlength="40" placeholder="选填" /></label>
-                  <label><span>联系电话</span><input v-model="current.header.phone" maxlength="50" placeholder="选填" /></label>
-                  <label><span>电子邮箱</span><input v-model="current.header.email" maxlength="100" placeholder="选填" /></label>
-                  <label><span>所在地</span><input v-model="current.header.location" maxlength="100" placeholder="选填" /></label>
-                  <label><span>出生年月</span><input v-model="current.header.birth_date" maxlength="40" placeholder="选填" /></label>
+                  <label><span>{{ t("Name") }} <b>*</b></span><input v-model="current.header.name" maxlength="40" :placeholder="t('Please enter your real name')" /></label>
+                  <label><span>{{ t("Political affiliation") }}</span><input v-model="current.header.political_status" maxlength="40" :placeholder="t('Optional')" /></label>
+                  <label><span>{{ t("Contact phone") }}</span><input v-model="current.header.phone" maxlength="50" :placeholder="t('Optional')" /></label>
+                  <label><span>{{ t("Email") }}</span><input v-model="current.header.email" maxlength="100" :placeholder="t('Optional')" /></label>
+                  <label><span>{{ t("Location") }}</span><input v-model="current.header.location" maxlength="100" :placeholder="t('Optional')" /></label>
+                  <label><span>{{ t("Date of birth") }}</span><input v-model="current.header.birth_date" maxlength="40" :placeholder="t('Optional')" /></label>
                 </div>
                 <div class="resume-photo-actions">
                   <input ref="photoInput" class="visually-hidden" type="file" accept="image/jpeg,image/png" @change="onPhotoSelected" />
-                  <button type="button" :disabled="photoBusy" @click="choosePhoto">{{ photoBusy ? '处理中…' : current.header.has_photo ? '更换证件照' : '上传证件照' }}</button>
-                  <button v-if="current.header.has_photo" class="resume-photo-remove" type="button" :disabled="photoBusy" @click="removePhoto">移除照片</button>
-                  <small>支持 JPG、PNG，不超过 2 MB；未上传时成品中不保留空照片框。</small>
+                  <button type="button" :disabled="photoBusy" @click="choosePhoto">{{ t(photoBusy ? 'Processing…' : current.header.has_photo ? 'Change ID photo' : 'Upload ID photo') }}</button>
+                  <button v-if="current.header.has_photo" class="resume-photo-remove" type="button" :disabled="photoBusy" @click="removePhoto">{{ t("Remove photo") }}</button>
+                  <small>{{ t("Supports JPG and PNG, up to 2 MB; if none is uploaded, no empty photo frame will be kept in the final output.") }}</small>
                 </div>
               </section>
 
               <div class="custom-sections">
                 <section v-for="(section, sectionIndex) in current.sections" :key="sectionIndex" class="custom-section-card">
-                  <div class="custom-section-title"><span>{{ String(sectionIndex + 1).padStart(2, '0') }}</span><input v-model="section.title" maxlength="50" aria-label="简历栏目标题" /></div>
+                  <div class="custom-section-title"><span>{{ t(String(sectionIndex + 1).padStart(2, '0')) }}</span><input v-model="section.title" maxlength="50" :aria-label="t('CV section title')" /></div>
                   <article v-for="(item, itemIndex) in section.items" :key="itemIndex" class="custom-change-card">
                     <div class="custom-change-heading">
-                      <span :class="['decision-chip', item.decision]">{{ { pending: '待处理', accepted: '已采纳', rejected: '保留原文', custom: '手动修改' }[item.decision] }}</span>
-                      <span class="resume-line-type">{{ item.item_type === 'heading' ? '经历标题' : '内容要点' }}</span>
-                      <p v-if="item.has_suggestion">{{ item.reason }}</p>
+                      <span :class="['decision-chip', item.decision]">{{ t({ pending: 'To do', accepted: 'Adopted', rejected: 'Keep original', custom: 'Edit manually' }[item.decision]) }}</span>
+                      <span class="resume-line-type">{{ t(item.item_type === 'heading' ? 'Experience title' : 'Key points') }}</span>
+                      <p v-if="item.has_suggestion">{{ t(item.reason) }}</p>
                     </div>
                     <div v-if="item.has_suggestion" class="custom-comparison-grid">
-                      <div><span>主简历原文</span><p>{{ item.source_text }}</p></div>
-                      <div><span>AI 建议</span><p>{{ item.suggested_text }}</p></div>
+                      <div><span>{{ t("Main CV text") }}</span><p>{{ t(item.source_text) }}</p></div>
+                      <div><span>{{ t("AI suggestions") }}</span><p>{{ t(item.suggested_text) }}</p></div>
                     </div>
-                    <label class="custom-final-field"><span>最终内容</span><textarea v-model="item.final_text" maxlength="2000" @input="markCustom(item)"></textarea></label>
+                    <label class="custom-final-field"><span>{{ t("Final content") }}</span><textarea v-model="item.final_text" maxlength="2000" @input="markCustom(item)"></textarea></label>
                     <div v-if="item.has_suggestion" class="custom-decision-actions">
-                      <button type="button" @click="rejectItem(item)">保留原文</button>
-                      <button type="button" @click="acceptItem(item)">采纳 AI 建议</button>
+                      <button type="button" @click="rejectItem(item)">{{ t("Keep original") }}</button>
+                      <button type="button" @click="acceptItem(item)">{{ t("Adopt AI suggestions") }}</button>
                     </div>
                   </article>
                 </section>
@@ -521,36 +522,36 @@ onMounted(loadPage)
             </div>
 
             <aside class="resume-preview-panel">
-              <div class="resume-preview-heading"><span>成品预览</span><small>PDF 与 Word 使用同一套简历模板</small></div>
+              <div class="resume-preview-heading"><span>{{ t("Final preview") }}</span><small>{{ t("PDF and Word use the same CV template") }}</small></div>
               <div class="resume-paper">
                 <header class="resume-paper-header">
                   <div class="resume-paper-identity">
-                    <h2>{{ current.header.name || '姓名' }} <small v-if="current.header.political_status">（{{ current.header.political_status }}）</small></h2>
+                    <h2>{{ t(current.header.name || 'Name') }} <small v-if="current.header.political_status">（{{ t(current.header.political_status) }}）</small></h2>
                     <div class="resume-paper-contacts">
-                      <span v-if="current.header.phone"><b>联系电话：</b>{{ current.header.phone }}</span>
-                      <span v-if="current.header.email"><b>电子邮箱：</b>{{ current.header.email }}</span>
-                      <span v-if="current.header.location"><b>所在地：</b>{{ current.header.location }}</span>
-                      <span v-if="current.header.birth_date"><b>出生年月：</b>{{ current.header.birth_date }}</span>
+                      <span v-if="current.header.phone"><b>{{ t("Contact phone:") }}</b>{{ t(current.header.phone) }}</span>
+                      <span v-if="current.header.email"><b>{{ t("Email:") }}</b>{{ t(current.header.email) }}</span>
+                      <span v-if="current.header.location"><b>{{ t("Location:") }}</b>{{ t(current.header.location) }}</span>
+                      <span v-if="current.header.birth_date"><b>{{ t("Date of birth:") }}</b>{{ t(current.header.birth_date) }}</span>
                     </div>
                   </div>
-                  <img v-if="current.header.has_photo" :src="photoUrl" alt="简历证件照" />
+                  <img v-if="current.header.has_photo" :src="photoUrl" :alt="t('CV photo')" />
                 </header>
                 <section v-for="(section, sectionIndex) in current.sections" :key="`preview-${sectionIndex}`" class="resume-paper-section">
-                  <h3>{{ section.title }}</h3>
+                  <h3>{{ t(section.title) }}</h3>
                   <template v-for="(item, itemIndex) in section.items" :key="`preview-${sectionIndex}-${itemIndex}`">
                     <p v-if="item.final_text.trim()" :class="item.item_type === 'heading' ? 'resume-paper-entry' : 'resume-paper-bullet'">
-                      <span v-if="item.item_type !== 'heading'">▪</span>{{ item.final_text }}
+                      <span v-if="item.item_type !== 'heading'">▪</span>{{ t(item.final_text) }}
                     </p>
                   </template>
                 </section>
               </div>
             </aside>
           </div>
-          <div class="ai-reference-note">AI 只负责重组和改写。导出前请再次核对事实、联系方式和时间信息。</div>
+          <div class="ai-reference-note">{{ t("The AI only reorganises and rewrites. Before exporting, please check the facts, contact details and dates again.") }}</div>
         </template>
 
-        <div v-if="successMessage" class="form-success custom-page-message" role="status">{{ successMessage }}</div>
-        <div v-if="errorMessage" class="form-error diagnosis-error custom-page-message" role="alert">{{ errorMessage }}</div>
+        <div v-if="successMessage" class="form-success custom-page-message" role="status">{{ t(successMessage) }}</div>
+        <div v-if="errorMessage" class="form-error diagnosis-error custom-page-message" role="alert">{{ t(errorMessage) }}</div>
       </template>
     </template>
   </section>

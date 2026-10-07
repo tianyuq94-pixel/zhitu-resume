@@ -61,7 +61,7 @@ def _owned_session(database: DatabaseSession, user_id: int, session_id: int) -> 
         )
     )
     if session is None or session.status in {"preparing", "failed"}:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="未找到这次模拟面试")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="This mock interview was not found")
     return session
 
 
@@ -199,7 +199,7 @@ async def _complete_report(
         database.commit()
         status_code, message = public_ai_error(
             exc,
-            "五道回答已保存，但综合报告暂时生成失败，请点击重试",
+            "Five answers saved, but the summary report could not be generated. Please click retry",
         )
         raise HTTPException(status_code=status_code, detail=message) from exc
 
@@ -234,9 +234,9 @@ async def create_interview(
 ) -> InterviewSessionView:
     resume = _primary_resume(database, current_user.id)
     if resume is None:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="请先上传主简历")
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Please upload your main CV first")
     if resume.confirmed_at is None:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="请先检查并确认简历文字")
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Please check and confirm the CV text first")
 
     job_match_id = None
     if payload.job_match_id is not None:
@@ -248,7 +248,7 @@ async def create_interview(
             )
         )
         if job_match is None:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="未找到对应的岗位匹配结果")
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No matching job results found")
         job_match_id = job_match.id
 
     auth_rate_limiter.check(f"interview-create:{current_user.id}", limit=5, window_seconds=3600)
@@ -329,7 +329,7 @@ async def create_interview(
             error_code=exc.code,
         )
         database.commit()
-        status_code, message = public_ai_error(exc, "AI 暂时无法生成面试题，请稍后重试")
+        status_code, message = public_ai_error(exc, "AI cannot generate interview questions right now. Please try again later.")
         raise HTTPException(status_code=status_code, detail=message) from exc
 
 
@@ -356,15 +356,15 @@ async def submit_interview_answer(
 ) -> InterviewSessionView:
     session = _owned_session(database, current_user.id, session_id)
     if session.status != "answering":
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="这次面试当前不能继续作答")
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="This interview cannot be continued at the moment")
     questions = _questions(database, session.id)
     if session.current_question_index >= len(questions):
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="五道题已经全部作答")
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="All five questions answered")
     question = questions[session.current_question_index]
     if question.id != payload.question_id:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="当前题目已变化，请刷新页面")
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="The current question has changed, please refresh the page")
     if question.answer_text is not None:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="这道题已经提交过")
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="This question has already been submitted")
 
     auth_rate_limiter.check(f"interview-answer:{current_user.id}", limit=30, window_seconds=3600)
     request_id = str(uuid4())
@@ -410,7 +410,7 @@ async def submit_interview_answer(
             error_code=exc.code,
         )
         database.commit()
-        status_code, message = public_ai_error(exc, "AI 暂时无法点评这次回答，请稍后重试")
+        status_code, message = public_ai_error(exc, "The AI cannot review this answer at the moment, please try again later")
         raise HTTPException(status_code=status_code, detail=message) from exc
 
     if session.current_question_index == 5:
@@ -432,7 +432,7 @@ async def retry_interview_report(
 ) -> InterviewSessionView:
     session = _owned_session(database, current_user.id, session_id)
     if session.status != "reporting" or session.current_question_index != 5:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="当前不需要重新生成综合报告")
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="No need to regenerate the summary report at present")
     auth_rate_limiter.check(f"interview-report:{current_user.id}", limit=5, window_seconds=3600)
     questions = _questions(database, session.id)
     await _complete_report(session, questions, response, current_user, database)
@@ -447,7 +447,7 @@ def get_interview_report(
 ) -> InterviewFinalReport:
     session = _owned_session(database, current_user.id, session_id)
     if session.status != "completed" or session.final_feedback is None:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="完成五道题后才能查看综合报告")
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Complete all five questions to view the full report")
     return InterviewFinalReport.model_validate(session.final_feedback)
 
 
@@ -463,7 +463,7 @@ def abandon_interview(
 ) -> Response:
     session = _owned_session(database, current_user.id, session_id)
     if session.status == "completed":
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="已完成的面试无需结束")
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Completed interviews do not need to be ended")
     session.status = "abandoned"
     database.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)

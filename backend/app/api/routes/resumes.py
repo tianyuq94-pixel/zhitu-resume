@@ -34,10 +34,10 @@ def get_primary_resume(current_user: CurrentUser, database: DatabaseSession) -> 
 def get_primary_resume_file(current_user: CurrentUser, database: DatabaseSession) -> FileResponse:
     resume = _primary_resume(database, current_user.id)
     if resume is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="尚未上传主简历")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No master CV uploaded yet")
     path = get_resume_storage().path_for(resume.storage_key)
     if not path.is_file():
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="简历原文件不存在")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="The original CV file does not exist")
     disposition = "inline" if resume.mime_type == "application/pdf" else "attachment"
     return FileResponse(
         path,
@@ -67,13 +67,13 @@ async def upload_primary_resume(
     content = await file.read(settings.resume_max_bytes + 1)
     await file.close()
     if not content:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="上传的文件为空")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="The uploaded file is empty")
     if len(content) > settings.resume_max_bytes:
         max_megabytes = settings.resume_max_bytes / (1024 * 1024)
         readable_limit = f"{max_megabytes:g}"
         raise HTTPException(
             status_code=status.HTTP_413_CONTENT_TOO_LARGE,
-            detail=f"简历文件不能超过 {readable_limit} MB",
+            detail=f"CV files must not exceed {readable_limit} MB",
         )
 
     original_name = _safe_original_name(file.filename)
@@ -133,7 +133,7 @@ def update_primary_resume_text(
 ) -> Resume:
     resume = _primary_resume(database, current_user.id)
     if resume is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="尚未上传主简历")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No master CV uploaded yet")
     resume.parsed_text = payload.parsed_text
     resume.content_version += 1
     resume.confirmed_at = datetime.now(UTC).replace(tzinfo=None)

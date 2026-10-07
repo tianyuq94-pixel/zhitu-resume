@@ -22,6 +22,6 @@ def check_budget(database, key: str, *, limit: int, window_seconds: int) -> None
         AgentBudget.count < limit).values(count=AgentBudget.count + 1))
     if changed.rowcount != 1:
         database.rollback()
-        raise HTTPException(429, '本时段使用次数已达上限，请稍后再试')
+        raise HTTPException(429, 'The usage limit for this period has been reached. Please try again later')
     database.execute(delete(AgentBudget).where(AgentBudget.expires_at < now - 86400))
     database.commit()

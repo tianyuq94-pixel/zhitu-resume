@@ -60,7 +60,7 @@ def test_job_match_rejects_invented_resume_evidence() -> None:
         "matched_items": [{"requirement": "Vue 和 TypeScript 开发", "resume_evidence": "熟练使用 React"}],
     }
     result = JobMatchResult.model_validate(payload)
-    with pytest.raises(ValueError, match="不在简历中"):
+    with pytest.raises(ValueError, match="not in the CV"):
         validate_job_match_facts(result, RESUME_TEXT, JOB_DESCRIPTION)
 
 

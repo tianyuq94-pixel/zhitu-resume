@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t, locale } from '@/i18n'
 import { computed, onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 
@@ -38,9 +39,9 @@ const formatBytes = (bytes: number) => {
 }
 
 const formatDate = (value: string | null) => {
-  if (!value) return '尚未确认'
+  if (!value) return 'Not yet confirmed'
   const utcValue = /(?:Z|[+-]\d{2}:\d{2})$/.test(value) ? value : `${value}Z`
-  return new Intl.DateTimeFormat('zh-CN', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(utcValue))
+  return new Intl.DateTimeFormat(locale.value === 'zh' ? 'zh-CN' : 'en-GB', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(utcValue))
 }
 
 const loadResume = async () => {
@@ -51,7 +52,7 @@ const loadResume = async () => {
     resume.value = response.data
     editedText.value = response.data?.parsed_text ?? ''
   } catch (error) {
-    errorMessage.value = getApiErrorMessage(error, '简历信息加载失败')
+    errorMessage.value = getApiErrorMessage(error, 'Failed to load CV information')
   } finally {
     loading.value = false
   }
@@ -61,9 +62,9 @@ const chooseFile = () => fileInput.value?.click()
 
 const validateFile = (file: File): string | null => {
   const extension = file.name.toLowerCase().split('.').pop()
-  if (!['pdf', 'docx'].includes(extension ?? '')) return '只支持 PDF 和 DOCX 文件'
-  if (file.size > 10 * 1024 * 1024) return '简历文件不能超过 10 MB'
-  if (file.size === 0) return '不能上传空文件'
+  if (!['pdf', 'docx'].includes(extension ?? '')) return 'Only PDF and DOCX files are supported'
+  if (file.size > 10 * 1024 * 1024) return 'CV files cannot exceed 10 MB'
+  if (file.size === 0) return 'Cannot upload an empty file'
   return null
 }
 
@@ -88,9 +89,9 @@ const uploadFile = async (file: File) => {
     })
     resume.value = response.data
     editedText.value = response.data.parsed_text
-    successMessage.value = '简历上传并解析成功，请检查下方文字'
+    successMessage.value = 'CV uploaded and parsed successfully. Please check the text below'
   } catch (error) {
-    errorMessage.value = getApiErrorMessage(error, '简历上传失败，请稍后重试')
+    errorMessage.value = getApiErrorMessage(error, 'CV upload failed. Please try again later')
   } finally {
     uploading.value = false
     uploadProgress.value = 0
@@ -114,7 +115,7 @@ const saveText = async () => {
   errorMessage.value = ''
   successMessage.value = ''
   if (effectiveCharacters.value < 30) {
-    errorMessage.value = '简历文字不能少于 30 个有效字符'
+    errorMessage.value = 'CV text must contain at least 30 valid characters'
     return
   }
   saving.value = true
@@ -122,25 +123,25 @@ const saveText = async () => {
     const response = await api.put<Resume>('/resumes/primary/text', { parsed_text: editedText.value })
     resume.value = response.data
     editedText.value = response.data.parsed_text
-    successMessage.value = '简历文字已确认并保存'
+    successMessage.value = 'CV text confirmed and saved'
   } catch (error) {
-    errorMessage.value = getApiErrorMessage(error, '简历文字保存失败')
+    errorMessage.value = getApiErrorMessage(error, 'Failed to save CV text')
   } finally {
     saving.value = false
   }
 }
 
 const deleteResume = async () => {
-  if (!window.confirm('确定删除当前主简历吗？原文件和解析文字都会被删除。')) return
+  if (!window.confirm(t('Delete the current main CV? The original file and parsed text will both be deleted.'))) return
   deleting.value = true
   errorMessage.value = ''
   try {
     await api.delete('/resumes/primary')
     resume.value = null
     editedText.value = ''
-    successMessage.value = '主简历已删除'
+    successMessage.value = 'Main CV deleted'
   } catch (error) {
-    errorMessage.value = getApiErrorMessage(error, '删除失败，请稍后重试')
+    errorMessage.value = getApiErrorMessage(error, 'Deletion failed, please try again later')
   } finally {
     deleting.value = false
   }
@@ -152,12 +153,12 @@ onMounted(loadResume)
 <template>
   <section class="resume-page">
     <div class="module-intro resume-intro">
-      <span class="eyebrow">PRIMARY RESUME</span>
-      <h2>我的简历</h2>
-      <p>上传一份主简历，系统会先解析成可编辑文字。后续所有 AI 功能只使用你确认后的内容。</p>
+      <span class="eyebrow">{{ t("PRIMARY RESUME") }}</span>
+      <h2>{{ t("My CV") }}</h2>
+      <p>{{ t("Upload a master CV and the system will first parse it into editable text. All subsequent AI features will only use the content you have confirmed.") }}</p>
     </div>
 
-    <div v-if="loading" class="profile-loading">正在加载主简历…</div>
+    <div v-if="loading" class="profile-loading">{{ t("Loading master CV…") }}</div>
     <template v-else>
       <input ref="fileInput" class="visually-hidden" type="file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" @change="onFileSelected" />
 
@@ -170,63 +171,63 @@ onMounted(loadResume)
         @drop.prevent="onDrop"
       >
         <div class="upload-icon" aria-hidden="true">↑</div>
-        <h3>上传你的主简历</h3>
-        <p>将 PDF 或 DOCX 文件拖到这里，或点击下方按钮选择文件。</p>
+        <h3>{{ t("Upload your master CV") }}</h3>
+        <p>{{ t("Drag a PDF or DOCX file here, or click the button below to choose a file.") }}</p>
         <button class="save-button upload-button" type="button" :disabled="uploading" @click="chooseFile">
-          {{ uploading ? `正在上传 ${uploadProgress}%` : '选择简历文件' }}
+          {{ t(uploading ? `Uploading ${uploadProgress}%` : 'Select CV file') }}
         </button>
-        <small>文件不超过 10 MB · PDF 需要具有正常文字层 · 暂不支持旧版 DOC</small>
+        <small>{{ t("File up to 10 MB · PDF must have a normal text layer · Legacy DOC is not currently supported") }}</small>
       </div>
 
       <template v-else>
         <div class="resume-file-card">
-          <div class="resume-file-type">{{ resume.mime_type === 'application/pdf' ? 'PDF' : 'DOCX' }}</div>
+          <div class="resume-file-type">{{ t(resume.mime_type === 'application/pdf' ? 'PDF' : 'DOCX') }}</div>
           <div class="resume-file-main">
-            <span>当前主简历</span>
-            <h3>{{ resume.original_name }}</h3>
+            <span>{{ t("Current master CV") }}</span>
+            <h3>{{ t(resume.original_name) }}</h3>
             <div class="resume-file-meta">
-              <b>解析完成</b><span>{{ formatBytes(resume.size_bytes) }}</span><span>内容版本 {{ resume.content_version }}</span><span>{{ formatDate(resume.confirmed_at) }}</span>
+              <b>{{ t("Parsing complete") }}</b><span>{{ t(formatBytes(resume.size_bytes)) }}</span><span>{{ t("Content version") }} {{ t(resume.content_version) }}</span><span>{{ t(formatDate(resume.confirmed_at)) }}</span>
             </div>
           </div>
           <div class="resume-file-actions">
-            <a href="/api/v1/resumes/primary/file" target="_blank" rel="noopener">查看原文件</a>
-            <button type="button" :disabled="uploading" @click="chooseFile">{{ uploading ? `替换中 ${uploadProgress}%` : '替换文件' }}</button>
-            <button class="danger-text-button" type="button" :disabled="deleting" @click="deleteResume">{{ deleting ? '删除中' : '删除' }}</button>
+            <a href="/api/v1/resumes/primary/file" target="_blank" rel="noopener">{{ t("View original file") }}</a>
+            <button type="button" :disabled="uploading" @click="chooseFile">{{ t(uploading ? `Replacing ${uploadProgress}%` : 'Replace file') }}</button>
+            <button class="danger-text-button" type="button" :disabled="deleting" @click="deleteResume">{{ t(deleting ? 'Deleting' : 'Delete') }}</button>
           </div>
         </div>
 
         <div class="resume-editor-card">
           <div class="card-heading resume-editor-heading">
-            <div><span>PARSED TEXT</span><h3>检查简历文字</h3></div>
-            <small>{{ effectiveCharacters.toLocaleString() }} 个有效字符</small>
+            <div><span>{{ t("PARSED TEXT") }}</span><h3>{{ t("Check CV text") }}</h3></div>
+            <small>{{ t(effectiveCharacters.toLocaleString()) }} {{ t("valid characters") }}</small>
           </div>
-          <div class="resume-editor-note">请检查姓名、时间、项目和技能是否解析正确。这里保存的文字将作为后续 AI 分析的唯一事实来源。</div>
-          <textarea v-model="editedText" maxlength="200000" spellcheck="false" aria-label="简历解析文字"></textarea>
+          <div class="resume-editor-note">{{ t("Please check whether your name, dates, projects and skills have been parsed correctly. The text saved here will be the sole source of truth for subsequent AI analysis.") }}</div>
+          <textarea v-model="editedText" maxlength="200000" spellcheck="false" :aria-label="t('CV parsed text')"></textarea>
           <div class="resume-editor-footer">
-            <span v-if="hasChanges">内容有未保存的修改</span><span v-else>当前内容已同步</span>
+            <span v-if="hasChanges">{{ t("There are unsaved changes") }}</span><span v-else>{{ t("Current content is synced") }}</span>
             <button class="save-button" type="button" :disabled="saving || (!hasChanges && !!resume.confirmed_at)" @click="saveText">
-              {{ saving ? '保存中…' : resume.confirmed_at ? '保存修改' : '确认并保存文字' }}
+              {{ t(saving ? 'Saving…' : resume.confirmed_at ? 'Save changes' : 'Confirm and save text') }}
             </button>
           </div>
         </div>
 
         <div class="resume-diagnosis-entry">
           <div>
-            <span>AI DIAGNOSIS</span>
-            <h3>让 AI 检查这份简历</h3>
-            <p>从完整度、内容质量、成果量化、专业表达和求职方向五个维度生成诊断报告。</p>
+            <span>{{ t("AI DIAGNOSIS") }}</span>
+            <h3>{{ t("Have AI check this CV") }}</h3>
+            <p>{{ t("Generate a diagnostic report across five dimensions: completeness, content quality, quantified results, professional expression and career direction.") }}</p>
           </div>
-          <RouterLink v-if="resume.confirmed_at" class="save-button diagnosis-entry-button" to="/app/resume/diagnosis">进入 AI 诊断</RouterLink>
-          <button v-else class="save-button diagnosis-entry-button" type="button" disabled>请先确认简历文字</button>
+          <RouterLink v-if="resume.confirmed_at" class="save-button diagnosis-entry-button" to="/app/resume/diagnosis">{{ t("Go to AI diagnosis") }}</RouterLink>
+          <button v-else class="save-button diagnosis-entry-button" type="button" disabled>{{ t("Please confirm the CV text first") }}</button>
         </div>
       </template>
 
-      <div v-if="errorMessage" class="form-error" role="alert">{{ errorMessage }}</div>
-      <div v-if="successMessage" class="form-success" role="status">{{ successMessage }}</div>
+      <div v-if="errorMessage" class="form-error" role="alert">{{ t(errorMessage) }}</div>
+      <div v-if="successMessage" class="form-success" role="status">{{ t(successMessage) }}</div>
 
       <div class="resume-privacy-note">
-        <b>文件处理说明</b>
-        <p>原文件保存在网站私有目录，不会公开访问；只有当前登录账户可以读取或删除。扫描版 PDF 和图片简历暂不支持文字识别。</p>
+        <b>{{ t("File processing notes") }}</b>
+        <p>{{ t("The original file is stored in a private directory on the site and will not be publicly accessible; only the currently logged-in account can read or delete it. Text recognition is not currently supported for scanned PDFs or image CVs.") }}</p>
       </div>
     </template>
   </section>

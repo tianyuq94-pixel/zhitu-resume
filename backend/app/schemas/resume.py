@@ -11,7 +11,7 @@ class ResumeTextUpdateRequest(BaseModel):
     def normalize_text(cls, value: str) -> str:
         normalized = value.replace("\x00", "").strip()
         if len("".join(normalized.split())) < 30:
-            raise ValueError("简历文字不能少于 30 个有效字符")
+            raise ValueError("CV text must contain at least 30 valid characters")
         return normalized
 
 
@@ -28,4 +28,3 @@ class ResumeView(BaseModel):
     confirmed_at: datetime | None
     created_at: datetime
     updated_at: datetime
-

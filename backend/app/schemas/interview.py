@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from app.schemas.factual_terms import technical_terms
 
 
 class InterviewCreateRequest(BaseModel):
@@ -16,7 +17,7 @@ class InterviewCreateRequest(BaseModel):
     def trim_job_title(cls, value: str) -> str:
         normalized = value.strip()
         if len(re.sub(r"\s+", "", normalized)) < 2:
-            raise ValueError("岗位名称不能少于 2 个有效字符")
+            raise ValueError("Job title must contain at least 2 valid characters")
         return normalized
 
     @field_validator("company_name", "job_requirements")
@@ -52,7 +53,7 @@ class InterviewAnswerRequest(BaseModel):
     def validate_answer(cls, value: str) -> str:
         normalized = value.strip()
         if len(re.sub(r"\s+", "", normalized)) < 10:
-            raise ValueError("回答不能少于 10 个有效字符")
+            raise ValueError("The answer must contain at least 10 valid characters")
         return normalized
 
 
@@ -135,31 +136,31 @@ def validate_generated_questions(
     expected_sequence = [1, 2, 3, 4, 5]
     actual_sequence = [question.sequence_no for question in result.questions]
     if actual_sequence != expected_sequence:
-        raise ValueError("面试题序号必须依次为 1 到 5")
+        raise ValueError("Interview question numbers must be 1 to 5 in order")
 
     normalized_questions = {_compact(question.question_text) for question in result.questions}
     if len(normalized_questions) != 5:
-        raise ValueError("五道面试题不能重复")
+        raise ValueError("The five interview questions cannot repeat")
 
     compact_resume = _compact(resume_text)
     compact_job_source = _compact(job_title + "\n" + (job_requirements or ""))
     resume_evidence_count = 0
     for question in result.questions:
         if _compact(question.job_evidence) not in compact_job_source:
-            raise ValueError("面试题引用的岗位依据不在岗位信息中")
+            raise ValueError("The role basis cited by the interview question is not in the role information")
         if question.resume_evidence:
             if _compact(question.resume_evidence) not in compact_resume:
-                raise ValueError("面试题引用的经历不在主简历中")
+                raise ValueError("The experience cited by the interview question is not in the main CV")
             resume_evidence_count += 1
     if resume_evidence_count < 2:
-        raise ValueError("至少两道面试题需要结合主简历经历")
+        raise ValueError("At least two interview questions need to draw on experience from the main CV")
 
 
 def validate_final_report(report: InterviewFinalReport) -> None:
     values = list(report.dimension_scores.model_dump().values())
     average = sum(values) / len(values)
     if abs(report.overall_score - average) > 20:
-        raise ValueError("综合分数与维度分数差异过大")
+        raise ValueError("The overall score differs too much from the dimension scores")
 
 
 def validate_question_feedback(feedback: InterviewQuestionFeedback, source_text: str) -> None:
@@ -171,16 +172,10 @@ def validate_question_feedback(feedback: InterviewQuestionFeedback, source_text:
         re.findall(r"\d+(?:\.\d+)?%?(?:MB|GB|KB)?", feedback_text, flags=re.IGNORECASE)
     )
     if not feedback_numbers.issubset(source_numbers):
-        raise ValueError("面试点评添加了用户输入中不存在的事实性数字")
+        raise ValueError("The interview feedback added factual figures that were not present in the user input")
 
-    source_terms = {
-        token.casefold()
-        for token in re.findall(r"[A-Za-z][A-Za-z0-9.+#-]*", source_text)
-    }
+    source_terms = technical_terms(source_text)
     evaluation_text = "\n".join(feedback.strengths + feedback.issues)
-    evaluation_terms = {
-        token.casefold()
-        for token in re.findall(r"[A-Za-z][A-Za-z0-9.+#-]*", evaluation_text)
-    }
+    evaluation_terms = technical_terms(evaluation_text)
     if not evaluation_terms.issubset(source_terms):
-        raise ValueError("面试点评添加了输入中不存在的英文技术或术语")
+        raise ValueError("The interview feedback added English technical terms or terminology that were not present in the input")

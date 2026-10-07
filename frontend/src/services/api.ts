@@ -1,4 +1,5 @@
 import axios, { AxiosError } from 'axios'
+import { locale } from '@/i18n'
 
 type ApiErrorBody = {
   detail?: string | Array<{ msg?: string }>
@@ -21,6 +22,7 @@ export const api = axios.create({
 })
 
 api.interceptors.request.use((config) => {
+  config.headers.set('Accept-Language', locale.value === 'zh' ? 'zh-CN' : 'en-GB')
   if (config.method && mutatingMethods.has(config.method.toLowerCase())) {
     const csrfToken = readCookie('ai_career_csrf')
     if (csrfToken) {
@@ -30,7 +32,7 @@ api.interceptors.request.use((config) => {
   return config
 })
 
-export const getApiErrorMessage = (error: unknown, fallback = '操作失败，请稍后重试'): string => {
+export const getApiErrorMessage = (error: unknown, fallback = 'Operation failed, please try again later'): string => {
   if (!(error instanceof AxiosError)) {
     return fallback
   }
@@ -42,8 +44,7 @@ export const getApiErrorMessage = (error: unknown, fallback = '操作失败，�
     return detail[0].msg.replace(/^Value error,\s*/, '')
   }
   if (error.code === 'ECONNABORTED') {
-    return '请求超时，请稍后重试'
+    return 'Request timed out, please try again later'
   }
   return fallback
 }
-

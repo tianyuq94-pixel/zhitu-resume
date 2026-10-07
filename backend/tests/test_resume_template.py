@@ -42,7 +42,7 @@ def test_resume_photo_accepts_real_png_and_rejects_fake_image() -> None:
     page.draw_rect(page.rect, color=(0, 0, 0), fill=(1, 1, 1))
     image_bytes = page.get_pixmap().tobytes("png")
     assert validate_resume_photo(image_bytes, "image/png") == ("image/png", ".png")
-    with pytest.raises(ResumePhotoError, match="只支持"):
+    with pytest.raises(ResumePhotoError, match="only supports"):
         validate_resume_photo(b"not-an-image", "image/png")
 
 
@@ -72,7 +72,7 @@ def test_finished_resume_pdf_contains_template_content() -> None:
     with pymupdf.open(stream=pdf_bytes, filetype="pdf") as document:
         text = "\n".join(page.get_text() for page in document)
         assert document.page_count == 1
-        assert document.metadata["author"] == "职途简历"
+        assert document.metadata["author"] == "Zhitu CV"
     assert "高小吉" in text
     assert "教育经历" in text
     assert "高顿大学" in text
@@ -106,7 +106,7 @@ def test_finished_resume_word_is_editable_and_uses_template_structure() -> None:
     text = "\n".join(node.text for node in document.element.body.iter() if node.tag == qn("w:t"))
     bullet = next(paragraph for paragraph in document.paragraphs if paragraph.style.name == "ResumeBullet")
 
-    assert document.core_properties.author == "职途简历"
+    assert document.core_properties.author == "Zhitu CV"
     assert abs(document.sections[0].page_width - Mm(210)) < 1_000
     assert abs(document.sections[0].page_height - Mm(297)) < 1_000
     assert bullet._p.pPr.numPr is not None

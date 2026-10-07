@@ -43,9 +43,9 @@ def validate_diagnosis_facts(result: ResumeDiagnosisResult, resume_text: str) ->
     for suggestion in result.suggestions:
         compact_source = re.sub(r"\s+", "", suggestion.source_text).casefold()
         if len(compact_source) < 2 or compact_source not in compact_resume:
-            raise ValueError("修改建议引用的原文不在简历中")
+            raise ValueError("The original text cited in the suggestion is not in the CV")
 
         source_numbers = set(re.findall(r"\d+(?:\.\d+)?%?", suggestion.source_text))
         suggested_numbers = set(re.findall(r"\d+(?:\.\d+)?%?", suggestion.suggested_text))
         if not suggested_numbers.issubset(source_numbers):
-            raise ValueError("修改建议添加了原文中不存在的数字")
+            raise ValueError("The suggestion adds figures that do not exist in the original text")

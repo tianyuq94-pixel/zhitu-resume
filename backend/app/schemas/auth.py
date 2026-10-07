@@ -14,7 +14,7 @@ class UsernameMixin(BaseModel):
     def normalize_username(cls, value: str) -> str:
         normalized = value.strip().lower()
         if not USERNAME_PATTERN.fullmatch(normalized):
-            raise ValueError("用户名只能包含英文字母、数字和下划线")
+            raise ValueError("Username may only contain English letters, numbers and underscores")
         return normalized
 
 
@@ -38,4 +38,3 @@ class UserView(BaseModel):
     username: str
     profile_completed: bool
     created_at: datetime
-

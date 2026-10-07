@@ -1,4 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { watch } from 'vue'
+import { locale, t } from '@/i18n'
 
 import AppLayout from '@/layouts/AppLayout.vue'
 import { pinia, useAuthStore } from '@/stores'
@@ -20,33 +22,33 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   scrollBehavior: () => ({ top: 0 }),
   routes: [
-    { path: '/me', component: PersonaView, meta: { title: '齐天宇的 AI 分身', publicPreview: true } },
-    { path: '/agent/interview', component: AgentInterviewView, meta: { title: '模拟面试', agentGuest: true } },
+    { path: '/me', component: PersonaView, meta: { title: 'Tianyu Qi\'s AI Persona', publicPreview: true } },
+    { path: '/agent/interview', component: AgentInterviewView, meta: { title: 'Mock interview', agentGuest: true } },
     {
       path: '/agent',
       name: 'agent-preview',
       component: AgentView,
-      meta: { title: '求职 Agent', publicPreview: true },
+      meta: { title: 'Career Agent', publicPreview: true },
     },
     {
       path: '/',
       name: 'landing',
       component: HubView,
-      meta: { title: '天宇的 AI 工作室', publicPreview: true },
+      meta: { title: 'Tianyu\'s AI Studio', publicPreview: true },
     },
     {
       path: '/login',
       name: 'login',
       component: AuthView,
       props: { mode: 'login' },
-      meta: { title: '登录', guestOnly: true },
+      meta: { title: 'Log in', guestOnly: true },
     },
     {
       path: '/register',
       name: 'register',
       component: AuthView,
       props: { mode: 'register' },
-      meta: { title: '注册', guestOnly: true },
+      meta: { title: 'Register', guestOnly: true },
     },
     {
       path: '/app',
@@ -57,43 +59,43 @@ const router = createRouter({
           path: '',
           name: 'dashboard',
           component: DashboardView,
-          meta: { title: '工作台' },
+          meta: { title: 'Workbench' },
         },
         {
           path: 'resume',
           name: 'resumes',
           component: ResumeView,
-          meta: { title: '我的简历' },
+          meta: { title: 'My CV' },
         },
         {
           path: 'resume/diagnosis',
           name: 'resume-diagnosis',
           component: ResumeDiagnosisView,
-          meta: { title: 'AI 简历诊断', requiresProfile: true },
+          meta: { title: 'AI CV Review', requiresProfile: true },
         },
         {
           path: 'custom-resumes',
           name: 'tailored-resumes',
           component: CustomResumeView,
-          meta: { title: '岗位定制简历', requiresProfile: true },
+          meta: { title: 'Job-tailored CV', requiresProfile: true },
         },
         {
           path: 'job-match',
           name: 'job-matching',
           component: JobMatchView,
-          meta: { title: '岗位匹配', requiresProfile: true },
+          meta: { title: 'Job match', requiresProfile: true },
         },
         {
           path: 'interview',
           name: 'interviews',
           component: InterviewView,
-          meta: { title: 'AI 面试', requiresProfile: true },
+          meta: { title: 'AI Interview', requiresProfile: true },
         },
         {
           path: 'profile',
           name: 'profile',
           component: ProfileView,
-          meta: { title: '个人资料' },
+          meta: { title: 'Personal details' },
         },
       ],
     },
@@ -128,9 +130,11 @@ router.beforeEach(async (to) => {
   }
 })
 
-router.afterEach((to) => {
-  const title = String(to.meta.title ?? '职途简历')
-  document.title = title === '职途简历' ? title : `${title} · 职途简历`
-})
+function updateTitle() {
+  const title = t(router.currentRoute.value.meta.title ?? 'Zhitu CV')
+  document.title = title === t('Zhitu CV') ? title : `${title} · ${t('Zhitu CV')}`
+}
+router.afterEach(updateTitle)
+watch(locale, updateTitle)
 
 export default router

@@ -20,10 +20,9 @@ class InMemoryRateLimiter:
             if len(attempts) >= limit:
                 raise HTTPException(
                     status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-                    detail="请求过于频繁，请稍后再试",
+                    detail="Too many requests, please try again later",
                 )
             attempts.append(now)
 
 
 auth_rate_limiter = InMemoryRateLimiter()
-

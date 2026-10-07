@@ -17,10 +17,10 @@ def facts_view(user) -> CareerFacts:
 def facts_text(user) -> str:
     data = facts_view(user)
     return "\n\n".join(f"{label}\n{value}" for label, value in [
-        ("个人补充", data.about), ("补充技能", data.skills), ("补充经历", data.experiences)
+        ("Personal supplement", data.about), ("Add skills", data.skills), ("Add experience", data.experiences)
     ] if value)
 
 
 def factual_resume(user, resume_text: str) -> str:
     extra = facts_text(user)
-    return resume_text + ("\n\n【用户确认的简历外资料：只按岗位相关性选用，不必全部写入简历】\n" + extra if extra else "")
+    return resume_text + ("\n\n[User-confirmed non-CV material: select only what is relevant to the role; not everything needs to go into the CV]\n" + extra if extra else "")

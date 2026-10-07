@@ -31,7 +31,7 @@ def test_run_detects_new_facts_without_rewriting_old_run(client):
     browser.put('/api/v1/profile/facts', json={'skills': 'Python数据清洗课程项目', 'revision': 0})
     result = step(browser, run)
     assert result['status'] == 'failed'
-    assert '资料已更新' in result['error']
+    assert 'Personal details updated' in result['error']
     assert create(browser)['facts_revision'] == 1
 
 

@@ -15,7 +15,7 @@ class JobMatchRequest(BaseModel):
     def trim_required_text(cls, value: str) -> str:
         normalized = value.strip()
         if len(re.sub(r"\s+", "", normalized)) < 2:
-            raise ValueError("必填内容过短")
+            raise ValueError("Required content too short")
         return normalized
 
     @field_validator("company_name")
@@ -29,7 +29,7 @@ class JobMatchRequest(BaseModel):
     @classmethod
     def validate_job_description(cls, value: str) -> str:
         if len(re.sub(r"\s+", "", value)) < 30:
-            raise ValueError("岗位要求不能少于 30 个有效字符")
+            raise ValueError("Job requirements must contain at least 30 valid characters")
         return value
 
 
@@ -84,39 +84,41 @@ def validate_job_match_facts(result: JobMatchResult, resume_text: str, job_descr
     compact_jd = _compact(job_description)
     requirement_names = {_compact(item.requirement) for item in result.key_requirements}
     if len(requirement_names) != len(result.key_requirements):
-        raise ValueError("岗位核心要求不能重复")
+        raise ValueError("Key job requirements cannot be duplicated")
 
     for item in result.key_requirements:
         if _compact(item.jd_evidence) not in compact_jd:
-            raise ValueError("岗位核心要求引用的原文不在 JD 中")
+            raise ValueError("The quoted text for a key job requirement is not in the JD")
 
     matched_names: set[str] = set()
     for item in result.matched_items:
         name = _compact(item.requirement)
         if name not in requirement_names:
-            raise ValueError("已匹配项没有对应岗位核心要求")
+            raise ValueError("A matched item has no corresponding key job requirement")
         if _compact(item.resume_evidence) not in compact_resume:
-            raise ValueError("已匹配项引用的内容不在简历中")
+            raise ValueError("The content referenced by a matched item is not in the CV")
         matched_names.add(name)
     if len(matched_names) != len(result.matched_items):
-        raise ValueError("已匹配项不能重复")
+        raise ValueError("Matched items cannot be duplicated")
 
     missing_names: set[str] = set()
     for item in result.missing_items:
         name = _compact(item.requirement)
         if name not in requirement_names:
-            raise ValueError("未体现项没有对应岗位核心要求")
-        if "未体现" not in item.explanation and "未明确" not in item.explanation:
-            raise ValueError("未体现项必须说明这是简历呈现情况")
+            raise ValueError("No corresponding core job requirements for unaddressed items")
+        explanation = item.explanation.casefold()
+        evidence_gap = re.search(r"not (?:clearly )?(?:evidenced|reflected|demonstrated|shown|documented) in (?:the |your )?(?:cv|resume)", explanation)
+        if not evidence_gap and "未体现" not in item.explanation and "未明确" not in item.explanation:
+            raise ValueError("Items not shown must state that this is how the CV presents it")
         missing_names.add(name)
     if len(missing_names) != len(result.missing_items):
-        raise ValueError("未体现项不能重复")
+        raise ValueError("Items not shown cannot be repeated")
 
     if matched_names & missing_names:
-        raise ValueError("同一要求不能同时标记为已匹配和未体现")
+        raise ValueError("The same requirement cannot be marked as both matched and not reflected")
     if matched_names | missing_names != requirement_names:
-        raise ValueError("每项岗位核心要求都必须标记匹配状态")
+        raise ValueError("Every core role requirement must be marked with a match status")
 
     expected_verdict = "recommend" if result.match_score >= 75 else "consider" if result.match_score >= 50 else "low"
     if result.verdict != expected_verdict:
-        raise ValueError("投递结论与匹配分数不一致")
+        raise ValueError("The application conclusion is inconsistent with the match score")

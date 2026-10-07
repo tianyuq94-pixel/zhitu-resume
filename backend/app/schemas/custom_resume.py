@@ -6,6 +6,7 @@ from datetime import datetime
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from app.schemas.factual_terms import ENGLISH_CONNECTIVES
 
 
 class CustomResumeCreateRequest(BaseModel):
@@ -26,9 +27,9 @@ class CustomResumeCreateRequest(BaseModel):
         if self.job_match_id is not None:
             return self
         if self.job_title is None or len(re.sub(r"\s+", "", self.job_title)) < 2:
-            raise ValueError("岗位名称不能少于 2 个有效字符")
+            raise ValueError("Job title must contain at least 2 valid characters")
         if self.job_description is None or len(re.sub(r"\s+", "", self.job_description)) < 30:
-            raise ValueError("岗位要求不能少于 30 个有效字符")
+            raise ValueError("Job requirements must contain at least 30 valid characters")
         return self
 
 
@@ -58,7 +59,7 @@ class GeneratedCustomResumeResult(BaseModel):
     def validate_total_items(self) -> "GeneratedCustomResumeResult":
         total = sum(len(section.items) for section in self.sections)
         if total < 2 or total > 60:
-            raise ValueError("定制简历内容条目数量不合理")
+            raise ValueError("The number of content entries in the customised CV is unreasonable")
         return self
 
 
@@ -150,7 +151,7 @@ class CustomResumeSummary(BaseModel):
 
 class CustomResumeView(CustomResumeSummary):
     job_description: str
-    template_name: Literal["简历模板"] = "简历模板"
+    template_name: Literal["CV template"] = "CV template"
     header: ResumeHeader
     sections: list[CustomResumeSection]
     missing_information_warnings: list[str]
@@ -163,32 +164,32 @@ def validate_generated_custom_resume(result: GeneratedCustomResumeResult, resume
         for item in section.items:
             compact_source = re.sub(r"\s+", "", item.source_text).casefold()
             if compact_source not in compact_resume:
-                raise ValueError("定制建议引用的原文不在主简历中")
+                raise ValueError("The original text cited in the customisation suggestion is not in the master CV")
             if compact_source in seen_sources:
-                raise ValueError("定制简历不能重复引用同一段原文")
+                raise ValueError("A customised CV cannot repeatedly cite the same passage of source text")
             seen_sources.add(compact_source)
 
             source_numbers = set(re.findall(r"\d+(?:\.\d+)?%?", item.source_text))
             suggested_numbers = set(re.findall(r"\d+(?:\.\d+)?%?", item.suggested_text))
             if not suggested_numbers.issubset(source_numbers):
-                raise ValueError("定制建议添加了主简历中不存在的数字")
+                raise ValueError("The customisation suggestion added figures that do not exist in the master CV")
 
             source_terms = {
-                token.casefold()
+                token.rstrip('.').casefold()
                 for token in re.findall(r"[A-Za-z][A-Za-z0-9.+#-]*", item.source_text)
             }
             suggested_terms = {
-                token.casefold()
+                token.rstrip('.').casefold()
                 for token in re.findall(r"[A-Za-z][A-Za-z0-9.+#-]*", item.suggested_text)
             }
-            if not suggested_terms.issubset(source_terms):
-                raise ValueError("定制建议添加了原文中不存在的英文技能或术语")
+            if not suggested_terms.issubset(source_terms | ENGLISH_CONNECTIVES):
+                raise ValueError("The customised suggestions added English skills or terminology not present in the original text")
 
             safe_connective_characters = set("的了并且及与和在于以为将把被对从由使通过进行完成相关其更等后中")
             source_chinese = set(re.findall(r"[\u3400-\u9fff]", item.source_text))
             suggested_chinese = set(re.findall(r"[\u3400-\u9fff]", item.suggested_text))
             if suggested_chinese - source_chinese - safe_connective_characters:
-                raise ValueError("定制建议添加了原文中不存在的事实性中文词语")
+                raise ValueError("The customisation suggestion added factual Chinese words that do not exist in the original text")
 
 
 def has_meaningful_change(source: str, suggested: str) -> bool:

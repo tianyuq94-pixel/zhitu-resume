@@ -74,9 +74,9 @@ async def create_resume_diagnosis(
 ) -> ResumeDiagnosisView:
     resume = _primary_resume(database, current_user.id)
     if resume is None:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="请先上传主简历")
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Please upload your main CV first")
     if resume.confirmed_at is None:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="请先检查并确认简历文字")
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Please check and confirm the CV text first")
 
     auth_rate_limiter.check(f"resume-diagnosis:{current_user.id}", limit=5, window_seconds=3600)
     settings = get_settings()
@@ -135,5 +135,5 @@ async def create_resume_diagnosis(
             )
         )
         database.commit()
-        status_code, message = public_ai_error(exc, "AI 暂时无法完成诊断，请稍后重试")
+        status_code, message = public_ai_error(exc, "The AI cannot complete the diagnosis at the moment, please try again later")
         raise HTTPException(status_code=status_code, detail=message) from exc

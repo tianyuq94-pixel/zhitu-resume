@@ -20,17 +20,17 @@ def get_current_user(
 ) -> User:
     session_token = request.cookies.get(get_settings().session_cookie_name)
     if not session_token:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="请先登录")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Please log in first")
     try:
         user_id, token_version = decode_session_token(session_token)
     except InvalidSessionError as exc:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="登录状态已失效") from exc
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Login session has expired") from exc
 
     user = database.scalar(
         select(User).options(selectinload(User.profile)).where(User.id == user_id)
     )
     if user is None or user.status != "active" or user.token_version != token_version:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="登录状态已失效")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Login session has expired")
     return user
 
 
@@ -42,7 +42,7 @@ def require_csrf(request: Request) -> None:
     csrf_cookie = request.cookies.get(settings.csrf_cookie_name)
     csrf_header = request.headers.get("X-CSRF-Token")
     if not csrf_cookie or not csrf_header or not secrets.compare_digest(csrf_cookie, csrf_header):
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="请求校验失败，请刷新页面后重试")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Request validation failed, please refresh the page and try again")
 
 
 def require_trusted_origin(request: Request) -> None:
@@ -59,7 +59,7 @@ def require_trusted_origin(request: Request) -> None:
     request_host = request.headers.get("host", "").strip()
     if parsed_origin.scheme == forwarded_proto and parsed_origin.netloc == request_host:
         return
-    raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="请求来源不受信任")
+    raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Request source is untrusted")
 
 
 def request_client_key(request: Request) -> str:

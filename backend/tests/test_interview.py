@@ -116,7 +116,7 @@ def test_interview_questions_reject_invented_resume_evidence() -> None:
     payload = {"questions": [dict(item) for item in QUESTIONS_RESULT["questions"]]}
     payload["questions"][0]["resume_evidence"] = "独立带领五人团队"
     result = GeneratedInterviewQuestions.model_validate(payload)
-    with pytest.raises(ValueError, match="不在主简历"):
+    with pytest.raises(ValueError, match="not in the main CV"):
         validate_generated_questions(result, RESUME_TEXT, "前端开发工程师", JOB_REQUIREMENTS)
 
 
@@ -141,7 +141,7 @@ def test_feedback_rejects_new_factual_number() -> None:
     feedback = InterviewQuestionFeedback.model_validate(
         {**FEEDBACK_RESULT, "suggestions": ["补充真实的文件大小限制，例如 10MB。", "说明处理流程。"]}
     )
-    with pytest.raises(ValueError, match="事实性数字"):
+    with pytest.raises(ValueError, match="factual figures"):
         validate_question_feedback(feedback, "用户回答没有提供具体大小限制。")
 
 
@@ -149,7 +149,7 @@ def test_feedback_rejects_new_technical_term() -> None:
     feedback = InterviewQuestionFeedback.model_validate(
         {**FEEDBACK_RESULT, "strengths": ["回答体现了 React 开发能力。"]}
     )
-    with pytest.raises(ValueError, match="英文技术"):
+    with pytest.raises(ValueError, match="English technical"):
         validate_question_feedback(feedback, "岗位与回答只提到了 Vue 和 TypeScript。")
 
 

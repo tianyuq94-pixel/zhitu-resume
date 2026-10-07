@@ -49,7 +49,7 @@ class FakeClient:
         self.calls = 0
 
     async def complete_json(self, system_prompt: str, user_prompt: str) -> AICompletion:
-        assert "不得编造" in system_prompt
+        assert "do not fabricate" in system_prompt
         assert '"job_title"' in user_prompt
         self.calls += 1
         return AICompletion(data=self.result, input_tokens=160, output_tokens=120)
@@ -80,7 +80,7 @@ def test_custom_resume_rejects_new_number() -> None:
         ],
     }
     result = GeneratedCustomResumeResult.model_validate(payload)
-    with pytest.raises(ValueError, match="不存在的数字"):
+    with pytest.raises(ValueError, match="figures that do not exist"):
         validate_generated_custom_resume(result, RESUME_TEXT)
 
 
@@ -101,7 +101,7 @@ def test_custom_resume_rejects_new_factual_phrase() -> None:
         ],
     }
     result = GeneratedCustomResumeResult.model_validate(payload)
-    with pytest.raises(ValueError, match="事实性中文词语"):
+    with pytest.raises(ValueError, match="factual Chinese words"):
         validate_generated_custom_resume(result, RESUME_TEXT)
 
 

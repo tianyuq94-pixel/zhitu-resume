@@ -13,6 +13,7 @@ from docx.text.paragraph import Paragraph
 
 from app.models.ai import CustomResume
 from app.services.custom_resume_photo import get_custom_resume_photo_storage
+from app.localisation import tr, request_language
 
 FONT_NAME = "Microsoft YaHei"
 PAGE_WIDTH_MM = 210
@@ -28,7 +29,7 @@ def _set_east_asian_font(element, font_name: str = FONT_NAME) -> None:
         run_fonts = OxmlElement("w:rFonts")
         run_properties.insert(0, run_fonts)
     for attribute in ("w:ascii", "w:hAnsi", "w:eastAsia", "w:cs"):
-        run_fonts.set(qn(attribute), font_name)
+        run_fonts.set(qn(attribute), font_name if attribute == 'w:eastAsia' or request_language.get() == 'zh' else 'Calibri')
 
 
 def _configure_style(style, *, size: float, bold: bool = False) -> None:
@@ -254,10 +255,10 @@ def _configure_document(document: DocumentObject) -> None:
 
 def _add_contact_table(container: _Cell, header: dict, width_mm: float) -> None:
     contacts = [
-        ("联系电话", header.get("phone")),
-        ("电子邮箱", header.get("email")),
-        ("所在地", header.get("location")),
-        ("出生年月", header.get("birth_date")),
+        (tr("Phone"), header.get("phone")),
+        (tr("Email"), header.get("email")),
+        (tr("Location"), header.get("location")),
+        (tr("Date of birth"), header.get("birth_date")),
     ]
     contacts = [(label, str(value).strip()) for label, value in contacts if str(value or "").strip()]
     if not contacts:
@@ -269,7 +270,7 @@ def _add_contact_table(container: _Cell, header: dict, width_mm: float) -> None:
         paragraph = table.cell(index // 2, index % 2).paragraphs[0]
         paragraph.style = "ResumeContact"
         paragraph.paragraph_format.right_indent = Mm(3)
-        label_run = paragraph.add_run(f"{label}：")
+        label_run = paragraph.add_run(f"{label}: ")
         label_run.bold = True
         paragraph.add_run(value)
 
@@ -285,7 +286,7 @@ def _add_header(document: DocumentObject, header: dict) -> None:
     identity_cell = table.cell(0, 0)
     name_paragraph = identity_cell.paragraphs[0]
     name_paragraph.style = "ResumeName"
-    name_paragraph.add_run(str(header.get("name") or "").strip() or "姓名")
+    name_paragraph.add_run(str(header.get("name") or "").strip() or "Name")
     political_status = str(header.get("political_status") or "").strip()
     if political_status:
         status_run = name_paragraph.add_run(f"（{political_status}）")
@@ -311,7 +312,7 @@ def _add_footer(document: DocumentObject) -> None:
     paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
     paragraph.paragraph_format.space_before = Pt(0)
     paragraph.paragraph_format.space_after = Pt(0)
-    prefix = paragraph.add_run("第 ")
+    prefix = paragraph.add_run("第 " if request_language.get() == 'zh' else "Page ")
     prefix.font.size = Pt(7.5)
     prefix.font.color.rgb = None
     field_run = paragraph.add_run()
@@ -328,7 +329,7 @@ def _add_footer(document: DocumentObject) -> None:
     end.set(qn("w:fldCharType"), "end")
     for element in (begin, instruction, separate, display, end):
         field_run._r.append(element)
-    suffix = paragraph.add_run(" 页")
+    suffix = paragraph.add_run(" 页" if request_language.get() == 'zh' else "")
     suffix.font.size = Pt(7.5)
     for run in paragraph.runs:
         run.font.name = FONT_NAME
@@ -342,9 +343,9 @@ def build_custom_resume_docx(custom_resume: CustomResume) -> bytes:
     content = custom_resume.content or {}
     header = content.get("header") or {}
     name = str(header.get("name") or "").strip()
-    document.core_properties.title = f"{name or '个人'}简历"
-    document.core_properties.author = "职途简历"
-    document.core_properties.subject = "个人简历"
+    document.core_properties.title = f"{name or 'Personal'} CV"
+    document.core_properties.author = "Zhitu CV"
+    document.core_properties.subject = "Personal CV"
 
     _add_header(document, header)
     bullet_num_id = _add_square_bullet_numbering(document)

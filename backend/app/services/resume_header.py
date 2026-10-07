@@ -2,6 +2,8 @@ import re
 
 
 SECTION_TITLES = {
+    "education", "experience", "work experience", "projects", "skills", "awards",
+    "certifications", "profile", "summary", "cv", "resume", "curriculum vitae",
     "教育经历",
     "教育背景",
     "科研成果",
@@ -22,13 +24,13 @@ SECTION_TITLES = {
 
 def _labeled_value(text: str, labels: tuple[str, ...], max_length: int = 100) -> str:
     label_pattern = "|".join(re.escape(label) for label in labels)
-    match = re.search(rf"(?:{label_pattern})\s*[：:]\s*([^\n]{{1,{max_length}}})", text)
+    match = re.search(rf"(?:{label_pattern})\s*[：:]\s*([^\n]{{1,{max_length}}})", text, re.I)
     return match.group(1).strip() if match else ""
 
 
 def extract_resume_header(resume_text: str) -> dict[str, str]:
     lines = [line.strip() for line in resume_text.splitlines() if line.strip()]
-    name = _labeled_value(resume_text, ("姓名",), 40)
+    name = _labeled_value(resume_text, ("姓名", "Full name", "Name"), 40)
     political_status = _labeled_value(resume_text, ("政治面貌",), 40)
 
     if not name:
@@ -37,7 +39,7 @@ def extract_resume_header(resume_text: str) -> dict[str, str]:
             if len(compact) > 30 or any(marker in line for marker in ("@", "：", ":")):
                 continue
             plain_title = re.sub(r"[（(].*?[）)]", "", compact)
-            if plain_title in SECTION_TITLES:
+            if plain_title.casefold() in SECTION_TITLES or line.casefold() in SECTION_TITLES:
                 continue
             match = re.fullmatch(r"([\u3400-\u9fff·]{2,10})(?:[（(]([^）)]+)[）)])?", compact)
             if match:
@@ -46,14 +48,24 @@ def extract_resume_header(resume_text: str) -> dict[str, str]:
                     political_status = match.group(2).strip()
                 break
 
+    if not name:
+        for line in lines[:3]:
+            if line.casefold() in SECTION_TITLES:
+                continue
+            if re.fullmatch(r"[A-Za-z][A-Za-z'-]{1,24}(?: [A-Za-z][A-Za-z'-]{1,24}){1,3}", line) and len(line) <= 40:
+                name = line
+                break
+
     email_match = re.search(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}", resume_text)
     phone_match = re.search(r"(?<!\d)(?:\+?86[\s-]?)?1[3-9]\d(?:[\s-]?\d){8}(?!\d)", resume_text)
+    if not phone_match:
+        phone_match = re.search(r"(?<!\w)(?:\+\d{1,3}[ -]?(?:\d[ -]?){8,12}\d|0(?:\d[ -]?){9,10}\d)(?!\d)", resume_text)
 
     return {
         "name": name,
         "political_status": political_status,
         "phone": re.sub(r"\s+", " ", phone_match.group(0)).strip() if phone_match else "",
         "email": email_match.group(0) if email_match else "",
-        "location": _labeled_value(resume_text, ("家庭住址", "现居地", "所在地", "户籍所在地")),
-        "birth_date": _labeled_value(resume_text, ("出生年月", "出生日期"), 40),
+        "location": _labeled_value(resume_text, ("家庭住址", "现居地", "所在地", "户籍所在地", "Location", "Address")),
+        "birth_date": _labeled_value(resume_text, ("出生年月", "出生日期", "Date of birth", "DOB"), 40),
     }

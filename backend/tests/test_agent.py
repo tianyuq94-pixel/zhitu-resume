@@ -210,7 +210,7 @@ def test_illegal_tool_is_rejected_and_changed_resume_blocks_execution(client, mo
         row.content_version += 1
         session.commit()
     run = step(browser, run)
-    assert '主简历已更新' in run['error']
+    assert 'Main CV updated' in run['error']
 
 
 def test_optional_jd_and_whitespace_validation(client):

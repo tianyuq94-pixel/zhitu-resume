@@ -1,31 +1,32 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { RouterLink } from 'vue-router'
 </script>
 
 <template>
   <div class="hub">
-    <header class="hub-header"><RouterLink to="/" class="hub-brand"><span>齐</span>天宇的 AI 工作室</RouterLink><small>一个人，一些想法，三个入口。</small></header>
+    <header class="hub-header"><RouterLink to="/" class="hub-brand"><span>{{ t("TQ") }}</span>{{ t("Tianyu's AI Studio") }}</RouterLink><small>{{ t("One creator. Three ways to explore.") }}</small></header>
     <main>
-      <div class="hub-intro"><span class="hub-eyebrow">HELLO, NICE TO MEET YOU.</span><h1>认识我，<br class="hub-mobile-break" />也遇见新的可能<span>。</span></h1><p>和我的 AI 分身聊聊，或体验我正在打造的求职工具。<br />从你感兴趣的地方开始。</p></div>
+      <div class="hub-intro"><span class="hub-eyebrow">{{ t("HELLO, NICE TO MEET YOU.") }}</span><h1>{{ t("Meet the person.") }}<br />{{ t("Explore the possibilities") }}<span>.</span></h1><p>{{ t("I'm Tianyu Qi, a Digital Media Technology undergraduate exploring practical AI applications.") }}<br />{{ t("Get to know me through conversation, or try the tools I've shaped with AI-assisted development.") }}</p></div>
       <div class="hub-portals">
         <RouterLink to="/me" class="hub-portal portal-persona">
-          <div class="portal-number">01 <span>ABOUT ME</span><b>↗</b></div>
-          <div class="portal-scene"><span class="persona-avatar">齐<small>AI</small></span><div class="mini-message">你好，想先了解我的哪个项目？<i></i></div></div>
-          <div class="portal-copy"><span class="portal-label">聊聊我</span><h2>AI 分身</h2><p>像一次轻松的私聊。<br />了解我的经历、项目与能力。</p><span class="portal-enter">开始对话 <b>→</b></span></div>
+          <div class="portal-number">01 <span>{{ t("ABOUT ME") }}</span><b>↗</b></div>
+          <div class="portal-scene"><span class="persona-avatar">{{ t("TQ") }}<small>{{ t("AI") }}</small></span><div class="mini-message">{{ t("Hello, which of my projects would you like to explore first?") }}<i></i></div></div>
+          <div class="portal-copy"><span class="portal-label">{{ t("GET TO KNOW ME") }}</span><h2>{{ t("AI Persona") }}</h2><p>{{ t("A conversation about my experience,") }}<br />{{ t("projects and product decisions.") }}</p><span class="portal-enter">{{ t("Start a conversation") }} <b>→</b></span></div>
         </RouterLink>
         <RouterLink to="/agent" class="hub-portal portal-agent">
-          <div class="portal-number">02 <span>YOUR NEXT CHAPTER</span><b>↗</b></div>
-          <div class="portal-scene agent-scene"><div class="goal-note"><small>下一个目标</small><strong>心仪的岗位</strong><span>◎ 分析　 ▤ 简历　 ✧ 准备</span></div><i>为你而准备 ✧</i></div>
-          <div class="portal-copy"><span class="portal-label">一起准备</span><h2>求职 Agent</h2><p>带上真实经历和目标岗位。<br />一步步生成你的求职成果。</p><span class="portal-enter">开启求职任务 <b>→</b></span></div>
+          <div class="portal-number">02 <span>{{ t("YOUR NEXT CHAPTER") }}</span><b>↗</b></div>
+          <div class="portal-scene agent-scene"><div class="goal-note"><small>{{ t("Next goal") }}</small><strong>{{ t("Target roles") }}</strong><span>{{ t("◎ Analyse　 ▤ CV　 ✧ Prepare") }}</span></div><i>{{ t("Prepared for you ✧") }}</i></div>
+          <div class="portal-copy"><span class="portal-label">{{ t("TURN A GOAL INTO ACTION") }}</span><h2>{{ t("Career Agent") }}</h2><p>{{ t("From your CV and a target role to analysis,") }}<br />{{ t("a tailored CV and interview preparation.") }}</p><span class="portal-enter">{{ t("Start a career task") }} <b>→</b></span></div>
         </RouterLink>
         <RouterLink to="/app" class="hub-portal portal-tools">
-          <div class="portal-number">03 <span>CAREER TOOLKIT</span><b>↗</b></div>
-          <div class="portal-scene tools-scene"><span>▤<small>我的简历</small></span><span>◎<small>岗位匹配</small></span><span>✧<small>模拟面试</small></span></div>
-          <div class="portal-copy"><span class="portal-label">打磨你的下一次机会</span><h2>职途简历</h2><p>简历诊断 · 岗位匹配 · 模拟面试<br />从简历到面试，按需使用求职工具。</p><span class="portal-enter">进入工作台 <b>→</b></span></div>
+          <div class="portal-number">03 <span>{{ t("CAREER TOOLKIT") }}</span><b>↗</b></div>
+          <div class="portal-scene tools-scene"><span>▤<small>{{ t("My CV") }}</small></span><span>◎<small>{{ t("Job match") }}</small></span><span>✧<small>{{ t("Mock interview") }}</small></span></div>
+          <div class="portal-copy"><span class="portal-label">{{ t("YOUR CAREER TOOLKIT") }}</span><h2>{{ t("Zhitu CV") }}</h2><p>{{ t("CV review, job matching and mock interviews.") }}<br />{{ t("Use each tool at your own pace.") }}</p><span class="portal-enter">{{ t("Open the workspace") }} <b>→</b></span></div>
         </RouterLink>
       </div>
     </main>
-    <footer><span>DESIGNED & BUILT BY QI TIANYU</span><p>AI 分身依据公开资料回答，非本人实时回复。</p></footer>
+    <footer><span>{{ t("CREATED BY TIANYU QI · DEVELOPED WITH AI ASSISTANCE") }}</span><p>{{ t("The AI Persona is not me replying live.") }}</p></footer>
   </div>
 </template>
 

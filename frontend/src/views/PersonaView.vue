@@ -1,13 +1,14 @@
 <script setup lang="ts">
-import { ref, nextTick, onMounted } from 'vue'
+import { t, locale } from '@/i18n'
+import { ref, nextTick, onMounted, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 import { api, getApiErrorMessage } from '@/services/api'
 
 type Message = { role: 'user' | 'assistant'; content: string }
-const profile = ref({ name: '齐天宇', headline: '数字媒体技术 · AI 应用实践', welcome: '', links: [] as {label:string;url:string}[] })
+const profile = ref({ name: 'Tianyu Qi', headline: 'Digital Media Technology · AI Application Practice', welcome: '', links: [] as {label:string;url:string}[] })
 const messages = ref<Message[]>([]), input = ref(''), busy = ref(false), ready = ref(false), error = ref('')
 const thread = ref<HTMLElement|null>(null), showCard = ref(false)
-const topics = ['先介绍一下你自己吧', '聊聊你做的职途简历项目', '项目里有哪些自己的思考？', '你有哪些实习经历？', '如何联系你？']
+const topics = ['Introduce yourself first', 'Let\'s talk about the Zhitu CV project you worked on', 'What are your own thoughts in the project?', 'What internship experience do you have?', 'How should we contact you?']
 async function scrollDown() { await nextTick(); thread.value?.scrollTo({top:thread.value.scrollHeight,behavior:'auto'}) }
 async function initialize() {
   error.value = ''
@@ -16,7 +17,7 @@ async function initialize() {
     await api.post('/auth/guest')
     if (!messages.value.length) messages.value = [{role:'assistant',content:profile.value.welcome}]
     ready.value = true
-  } catch(e) { error.value = getApiErrorMessage(e,'暂时连接不上，请重试') }
+  } catch(e) { error.value = getApiErrorMessage(e,'Unable to connect for now. Please try again') }
 }
 async function reply() {
   if (busy.value || !ready.value) return
@@ -24,7 +25,7 @@ async function reply() {
   try {
     const result = await api.post('/persona/chat', { messages: messages.value.slice(-12).map(m=>({role:m.role,content:m.content})) }, {timeout:150000})
     messages.value.push({role:'assistant',content:result.data.answer})
-  } catch(e) { error.value = getApiErrorMessage(e,'暂时没有回复，请重试') }
+  } catch(e) { error.value = getApiErrorMessage(e,'No reply for now. Please try again') }
   finally { busy.value = false; await scrollDown() }
 }
 async function send(text = input.value) {
@@ -34,31 +35,37 @@ async function send(text = input.value) {
 function clear() { if (!busy.value) { messages.value=[{role:'assistant',content:profile.value.welcome}];error.value='';input.value='' } }
 function onEnter(event:KeyboardEvent) { if (event.key==='Enter' && !event.shiftKey && !event.isComposing) {event.preventDefault(); void send()} }
 onMounted(initialize)
+watch(locale, async () => {
+  try {
+    profile.value = (await api.get('/persona/profile')).data
+    if (messages.value.length === 1 && messages.value[0]?.role === 'assistant') messages.value[0].content = profile.value.welcome
+  } catch { /* Keep the current conversation intact if profile refresh fails. */ }
+})
 </script>
 
 <template>
   <div class="persona-shell">
-    <nav class="chat-dock"><RouterLink to="/" aria-label="返回三入口首页">⌂</RouterLink><span class="dock-selected">☏</span><RouterLink to="/agent" aria-label="求职 Agent">✧</RouterLink><RouterLink to="/app" aria-label="职途简历">▤</RouterLink><small>TY</small></nav>
+    <nav class="chat-dock"><RouterLink to="/" :aria-label="t('Return to the three-entry homepage')">⌂</RouterLink><span class="dock-selected">☏</span><RouterLink to="/agent" :aria-label="t('Career Agent')">✧</RouterLink><RouterLink to="/app" :aria-label="t('Zhitu CV')">▤</RouterLink><small>{{ t("TY") }}</small></nav>
     <aside class="chat-sidebar">
-      <div class="sidebar-title">对话 <span>01</span></div><div class="contact-active"><div class="chat-avatar">齐</div><div><strong>{{ profile.name }}</strong><small>AI 分身 · 公开资料</small></div></div>
-      <div class="topic-heading">可以这样开始</div><button v-for="topic in topics" :key="topic" :disabled="busy || !ready || messages.at(-1)?.role === 'user'" class="topic-button" @click="send(topic)">{{topic}} <span>↗</span></button>
-      <div class="sidebar-note">不是一张静态简历，<br />是一次关于我的对话。<small>AI 不是本人，不替本人作承诺。</small></div>
-      <RouterLink to="/" class="back-workspace">← 返回工作室</RouterLink>
+      <div class="sidebar-title">{{ t("Chat") }} <span>01</span></div><div class="contact-active"><div class="chat-avatar">{{ t("TQ") }}</div><div><strong>{{ t(profile.name) }}</strong><small>{{ t("AI Persona · Public information") }}</small></div></div>
+      <div class="topic-heading">{{ t("You can start like this") }}</div><button v-for="topic in topics" :key="topic" :disabled="busy || !ready || messages.at(-1)?.role === 'user'" class="topic-button" @click="send(topic)">{{ t(topic) }} <span>↗</span></button>
+      <div class="sidebar-note">{{ t("Not a static CV,") }}<br />{{ t("It is a conversation about me.") }}<small>{{ t("The AI is not the person and does not make commitments on their behalf.") }}</small></div>
+      <RouterLink to="/" class="back-workspace">{{ t("← Back to the studio") }}</RouterLink>
     </aside>
     <main class="chat-main">
-      <header class="chat-header"><div class="chat-avatar mobile-avatar">齐</div><div><h1>{{profile.name}} <span>AI 分身</span></h1><p>基于本人确认的资料 · 非本人实时回复</p></div><button @click="showCard=!showCard">{{showCard?'收起资料':'个人资料'}}</button></header>
-      <aside v-if="showCard" class="chat-profile"><strong>{{profile.name}}</strong><p>{{profile.headline}}</p><a v-for="link in profile.links" :key="link.url" :href="link.url" target="_blank" rel="noopener noreferrer">{{link.label}} ↗</a><small>联系方式可以直接在聊天中询问。</small></aside>
-      <div ref="thread" class="chat-thread" role="log" aria-label="与齐天宇 AI 分身的对话" aria-live="polite">
-        <div class="chat-date">从这里，认识我</div>
+      <header class="chat-header"><div class="chat-avatar mobile-avatar">{{ t("TQ") }}</div><div><h1>{{ t(profile.name) }} <span>{{ t("AI Persona") }}</span></h1><p>{{ t("Based on information confirmed by me · not my real-time replies") }}</p></div><button @click="showCard=!showCard">{{ t(showCard?'Collapse profile':'Personal details') }}</button></header>
+      <aside v-if="showCard" class="chat-profile"><strong>{{ t(profile.name) }}</strong><p>{{ t(profile.headline) }}</p><a v-for="link in profile.links" :key="link.url" :href="link.url" target="_blank" rel="noopener noreferrer">{{ t(link.label) }} ↗</a><small>{{ t("Contact details can be asked for directly in the chat.") }}</small></aside>
+      <div ref="thread" class="chat-thread" role="log" :aria-label="t('Conversation with Tianyu Qi\'s AI Persona')" aria-live="polite">
+        <div class="chat-date">{{ t("Get to know me here") }}</div>
         <div v-for="(message,index) in messages" :key="index" class="chat-row" :class="{outgoing:message.role==='user'}">
-          <div class="bubble-avatar">{{message.role==='user'?'你':'齐'}}</div><div class="bubble-stack"><small>{{message.role==='user'?'你':'齐天宇 · AI 分身'}}</small><div class="chat-bubble">{{message.content}}</div></div>
+          <div class="bubble-avatar">{{ t(message.role==='user'?'You':'TQ') }}</div><div class="bubble-stack"><small>{{ t(message.role==='user'?'You':'Tianyu Qi · AI Persona') }}</small><div class="chat-bubble">{{ t(message.content) }}</div></div>
         </div>
-        <div v-if="busy" class="chat-row"><div class="bubble-avatar">齐</div><div class="typing-bubble" role="status"><i></i><i></i><i></i><span>正在整理回复</span></div></div>
-        <div v-if="error" class="chat-error" role="alert">{{error}}<button :disabled="busy" @click="ready ? reply() : initialize()">重试</button></div>
-        <div v-if="messages.length===1" class="chat-starters"><button v-for="topic in topics.slice(0,3)" :key="topic" :disabled="!ready || busy" @click="send(topic)">{{topic}}</button></div>
+        <div v-if="busy" class="chat-row"><div class="bubble-avatar">{{ t("TQ") }}</div><div class="typing-bubble" role="status"><i></i><i></i><i></i><span>{{ t("Organising reply") }}</span></div></div>
+        <div v-if="error" class="chat-error" role="alert">{{ t(error) }}<button :disabled="busy" @click="ready ? reply() : initialize()">{{ t("Retry") }}</button></div>
+        <div v-if="messages.length===1" class="chat-starters"><button v-for="topic in topics.slice(0,3)" :key="topic" :disabled="!ready || busy" @click="send(topic)">{{ t(topic) }}</button></div>
       </div>
-      <form class="chat-composer" @submit.prevent="send()"><div class="composer-tools"><span>有什么想了解的，直接问我。</span><button type="button" :disabled="busy" @click="clear">重新聊聊</button></div><label class="chat-sr" for="persona-message">输入消息</label><textarea id="persona-message" v-model="input" maxlength="1500" rows="3" placeholder="比如：做这个项目时，你遇到过什么问题？" :disabled="busy || !ready || messages.at(-1)?.role==='user'" @keydown="onEnter"></textarea><div class="composer-bottom"><small>Enter 发送 · Shift + Enter 换行　{{input.length}} / 1500</small><button type="submit" :disabled="!input.trim() || busy || !ready || messages.at(-1)?.role==='user'">{{busy?'回复中…':'发送 ↑'}}</button></div><p>消息用于生成回复，请勿发送敏感信息。刷新页面后本页对话不保留。</p></form>
-      <RouterLink to="/" class="mobile-home">← 返回三个入口</RouterLink>
+      <form class="chat-composer" @submit.prevent="send()"><div class="composer-tools"><span>{{ t("If there is anything you want to know, just ask me.") }}</span><button type="button" :disabled="busy" @click="clear">{{ t("Chat again") }}</button></div><label class="chat-sr" for="persona-message">{{ t("Enter message") }}</label><textarea id="persona-message" v-model="input" maxlength="1500" rows="3" :placeholder="t('For example: what problems did you encounter during this project?')" :disabled="busy || !ready || messages.at(-1)?.role==='user'" @keydown="onEnter"></textarea><div class="composer-bottom"><small>{{ t("Enter to send · Shift + Enter for a new line") }}　{{ t(input.length) }} / 1500</small><button type="submit" :disabled="!input.trim() || busy || !ready || messages.at(-1)?.role==='user'">{{ t(busy?'Replying…':'Send ↑') }}</button></div><p>{{ t("Messages are used to generate replies, please do not send sensitive information. This page's conversation is not retained after refreshing the page.") }}</p></form>
+      <RouterLink to="/" class="mobile-home">{{ t("← Back to the three entry points") }}</RouterLink>
     </main>
   </div>
 </template>

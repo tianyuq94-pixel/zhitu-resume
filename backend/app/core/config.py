@@ -20,7 +20,7 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    app_name: str = "职途简历 API"
+    app_name: str = "Zhitu CV API"
     app_version: str = "0.1.0"
     app_env: str = "development"
     api_prefix: str = "/api/v1"
