@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { t } from '@/i18n'
+import { say } from '@/content/portfolio'
 import { useAgent } from '@/services/agent'
 import { computed, ref } from 'vue'
 const { facts, factsSaving, factsNotice, factsTab, addition, saveFacts, addFacts, regenerate, prompt, jobTitle, companyName, run, history, resume, parsedText, custom, resumeDialog,
@@ -43,6 +44,7 @@ const resultReady = computed(() => tab.value === 'Role analysis' ? !!run.value?.
             <span class="agent-kicker"><span></span> {{ t("A LITTLE PREPARATION. A BIG NEXT STEP.") }}</span>
             <h1>{{ t("Your next step.") }}<br /><span>{{ t("Which role are you aiming for?") }}</span></h1>
             <p>{{ t("Bring your experience and a target role.") }}<br />{{ t("Get a clearer match, a tailored CV and an interview preparation plan.") }}</p>
+            <a href="/demo" class="agent-example-link">{{ say('Just exploring? View a complete example — no upload needed.', '先看看效果？查看完整示例，无需上传资料。') }} ↗</a>
             <div class="agent-suggestions"><button v-for="(example, index) in examples" :key="example" @click="jobTitle = example"><span>0{{ t(index + 1) }}</span>{{ t(example) }}<b>↗</b></button></div>
           </div>
           <div v-else-if="run" class="agent-thread">
@@ -53,7 +55,7 @@ const resultReady = computed(() => tab.value === 'Role analysis' ? !!run.value?.
             <div v-if="run.error" class="resume-file-error" role="alert">{{ t(run.error) }}</div>
             <button v-if="!working && ['ready', 'failed', 'running'].includes(run.status)" class="agent-result-action" @click="execute">{{ t(run.status === 'failed' ? 'Try again' : 'Continue preparing') }} →</button>
             <button v-if="!working" class="refresh-facts-button" @click="regenerate">{{ t("Regenerate with the latest information ↗") }}</button>
-            <p v-if="run.status === 'completed'" class="completion-note">{{ t("Your job application outputs are ready. View the results below, and once you have confirmed your CV you can download it.") }}</p>
+            <p v-if="run.status === 'completed'" class="completion-note">{{ t("Your career results are ready. View the results below, and once you have confirmed your CV you can download it.") }}</p>
           </div>
           <div v-if="!run || run.status === 'waiting'" class="agent-composer-wrap">
             <form v-if="!run || run.status === 'waiting'" class="agent-composer" @submit.prevent="send">
@@ -70,7 +72,7 @@ const resultReady = computed(() => tab.value === 'Role analysis' ? !!run.value?.
           <button v-if="busy" @click="paused = true" :disabled="paused">{{ t(paused ? 'Pause after completing the current process' : 'Pause further preparation') }}</button>
         </div>
         <aside class="agent-results">
-          <div class="agent-results-heading"><div><span class="agent-kicker">{{ t("YOUR CAREER KIT") }}</span><h2>{{ t(active ? 'Your job application outputs' : 'Every step brings results') }}</h2></div><span class="agent-kit-icon">✳</span></div>
+          <div class="agent-results-heading"><div><span class="agent-kicker">{{ t("YOUR CAREER KIT") }}</span><h2>{{ t(active ? 'Your career results' : 'Every step brings results') }}</h2></div><span class="agent-kit-icon">✳</span></div>
           <template v-if="!active">
             <div class="agent-paper-scene"><div class="agent-paper"><div class="paper-top"><b>{{ t("Your next step") }}</b><span>{{ t("RESUME") }}</span></div><div class="paper-name">{{ t("Present yourself more clearly.") }}</div><i></i><i></i><div class="paper-section">{{ t("Experience · Ability · Potential") }}</div><i></i><i></i><i></i><div class="paper-section">{{ t("Prepared for the target role") }}</div><i></i><i></i></div><span class="agent-paper-tag">{{ t("✧ Real experience, precise expression") }}</span></div>
             <div class="agent-outcomes"><div><span class="outcome-icon peach">◎</span><div><h3>{{ t("See how you match the role") }}</h3><p>{{ t("Identify your strengths and the areas that need improvement.") }}</p></div></div><div><span class="outcome-icon mint">▤</span><div><h3>{{ t("Take away a finished CV") }}</h3><p>{{ t("Customised for the role, supports PDF and Word export.") }}</p></div></div><div><span class="outcome-icon lilac">✧</span><div><h3>{{ t("Prepare for interviews with direction") }}</h3><p>{{ t("Key knowledge, project follow-up questions and answer approaches.") }}</p></div></div></div>
@@ -86,7 +88,7 @@ const resultReady = computed(() => tab.value === 'Role analysis' ? !!run.value?.
               <template v-if="run.match"><h3>{{ t(run.job_title) }} {{ t("· Role analysis") }}</h3><p v-if="!run.generic_requirements">{{ t("Reference match score:") }}{{ t(run.match.match_score) }} / 100</p><p>{{ t(run.match.verdict_reason) }}</p>
                 <h4>{{ t("Role focus") }}</h4><ul><li v-for="item in run.match.key_requirements" :key="item.requirement">{{ t(item.requirement) }}</li></ul>
                 <div v-for="item in run.match.matched_items" :key="item.requirement" class="agent-insight"><small>{{ t("Your strengths ·") }} {{ t(item.requirement) }}</small><p>{{ t(item.resume_evidence) }}</p></div>
-                <h4>{{ t("Needs supplementing") }}</h4><p v-for="item in run.match.missing_items" :key="item.requirement">{{ t(item.requirement) }}：{{ t(item.explanation) }}</p><h4>{{ t("Suggested next step") }}</h4><ul><li v-for="item in run.match.improvements" :key="item">{{ t(item) }}</li></ul>
+                <h4>{{ t("More information needed") }}</h4><p v-for="item in run.match.missing_items" :key="item.requirement">{{ t(item.requirement) }}：{{ t(item.explanation) }}</p><h4>{{ t("Suggested next step") }}</h4><ul><li v-for="item in run.match.improvements" :key="item">{{ t(item) }}</li></ul>
               </template><p v-else>{{ t("Once the job analysis is complete, the real results will be shown here.") }}</p>
             </div>
             <div v-else-if="tab === 'Tailored CV'" class="agent-result-content">
@@ -94,7 +96,7 @@ const resultReady = computed(() => tab.value === 'Role analysis' ? !!run.value?.
                 <div class="agent-job-fields"><label>{{ t("Phone") }}<input v-model="custom.header.phone" maxlength="50" /></label><label>{{ t("Email") }}<input v-model="custom.header.email" maxlength="100" /></label></div>
                 <button class="resume-open-button" @click="paperPreview = !paperPreview">{{ t(paperPreview ? 'View revision suggestions' : 'View / edit full CV') }}</button>
                 <div v-if="paperPreview" class="agent-live-paper"><h2>{{ t(custom.header.name || 'Please enter your name') }}</h2><p>{{ t(custom.header.phone) }}　{{ t(custom.header.email) }}</p><section v-for="section in custom.sections" :key="section.title"><h3>{{ t(section.title) }}</h3><textarea v-for="(item, index) in section.items" :key="index" v-model="item.final_text" class="paper-text-editor" :aria-label="t(section.title + 'Body' + (index + 1))" maxlength="2000" rows="2" @input="item.decision = 'custom'"></textarea></section></div>
-                <template v-else><p v-if="!suggestionCount" class="no-change-note">{{ t("There are currently no substantive rewrites for you to confirm. The original text has been retained; you can edit and export it in View / edit full CV.") }}</p><section v-for="(section, si) in suggestionSections" :key="si"><h4>{{ t(section.title) }}</h4><div v-for="(item, ii) in section.items" :key="ii" class="agent-edit-item"><div class="suggestion-comparison"><div><small>{{ t(item.source_kind === 'supplement' ? 'From supplementary material · suggested addition' : 'Original text') }}</small><p>{{ t(item.source_text) }}</p></div><div><small>{{ t("Suggested wording") }}</small><p>{{ t(item.suggested_text) }}</p></div></div><small>{{ t(item.reason) }}</small><div class="agent-downloads"><button @click="decide(item, 'accepted')">{{ t("Adopt suggestion") }}</button><button @click="decide(item, 'rejected')">{{ t(item.source_kind === 'supplement' ? 'Not joining for now' : 'Keep original') }}</button></div><textarea v-model="item.final_text" class="agent-resume-editor" :aria-label="t(section.title + 'Final content' + (ii + 1))" maxlength="2000" rows="3" @input="item.decision = 'custom'"></textarea><small>{{ t(item.decision === 'pending' ? 'To confirm' : 'Confirmed') }}</small></div></section></template>
+                <template v-else><p v-if="!suggestionCount" class="no-change-note">{{ t("There are currently no substantive rewrites for you to confirm. The original text has been retained; you can edit and export it in View / edit full CV.") }}</p><section v-for="(section, si) in suggestionSections" :key="si"><h4>{{ t(section.title) }}</h4><div v-for="(item, ii) in section.items" :key="ii" class="agent-edit-item"><div class="suggestion-comparison"><div><small>{{ t(item.source_kind === 'supplement' ? 'From supplementary material · suggested addition' : 'Original text') }}</small><p>{{ t(item.source_text) }}</p></div><div><small>{{ t("Suggested wording") }}</small><p>{{ t(item.suggested_text) }}</p></div></div><small>{{ t(item.reason) }}</small><div class="agent-downloads"><button @click="decide(item, 'accepted')">{{ t("Adopt suggestion") }}</button><button @click="decide(item, 'rejected')">{{ t(item.source_kind === 'supplement' ? 'Skip for now' : 'Keep original') }}</button></div><textarea v-model="item.final_text" class="agent-resume-editor" :aria-label="t(section.title + 'Final content' + (ii + 1))" maxlength="2000" rows="3" @input="item.decision = 'custom'"></textarea><small>{{ t(item.decision === 'pending' ? 'To confirm' : 'Confirmed') }}</small></div></section></template>
                 <section class="facts-opportunity">
                   <span class="agent-kicker">{{ t("MAKE YOUR EXPERIENCE COUNT") }}</span>
                   <h3>{{ t(missingPrompts.length ? 'These experiences may not be on your CV yet' : 'Any other experience worth showcasing?') }}</h3>
@@ -120,7 +122,7 @@ const resultReady = computed(() => tab.value === 'Role analysis' ? !!run.value?.
       <section v-if="factsTab === 'Additional experience'" class="facts-library">
         <h3>{{ t("Record what will not fit on a one-page CV") }}</h3>
         <p>{{ t("The content here feeds into role analysis, customised CVs and interview preparation. Only enter real information; do not enter sensitive details such as ID numbers or account passwords.") }}</p>
-        <label>{{ t("Personal supplement") }} <small>{{ t(facts.about.length) }} / 1500</small><textarea v-model="facts.about" maxlength="1500" rows="3" :disabled="working || factsSaving" :placeholder="t('Information not included in the CV, such as specialism, course background, certificates and language skills')"></textarea></label>
+        <label>{{ t("Additional background") }} <small>{{ t(facts.about.length) }} / 1500</small><textarea v-model="facts.about" maxlength="1500" rows="3" :disabled="working || factsSaving" :placeholder="t('Information not included in the CV, such as specialism, course background, certificates and language skills')"></textarea></label>
         <label>{{ t("Skills and proficiency") }} <small>{{ t(facts.skills.length) }} / 3500</small><textarea v-model="facts.skills" maxlength="3500" rows="4" :disabled="working || factsSaving" :placeholder="t('Which tools or skills do you have? In which situations have you actually used them? Please distinguish between familiar, currently learning and proficient.')"></textarea></label>
         <label>{{ t("Projects, internships and practical experience") }} <small>{{ t(facts.experiences.length) }} / 10000</small><textarea v-model="facts.experiences" maxlength="10000" rows="7" :disabled="working || factsSaving" :placeholder="t('For each experience, write: dates and name → your role → what you did → skills used → real outcomes. Course projects, societies and volunteering also count.')"></textarea></label>
         <p v-if="factsNotice" role="status">{{ t(factsNotice) }}</p>

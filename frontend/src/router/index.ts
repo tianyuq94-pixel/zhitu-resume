@@ -17,11 +17,14 @@ import AgentView from '@/views/AgentView.vue'
 import ProfileView from '@/views/ProfileView.vue'
 import ResumeView from '@/views/ResumeView.vue'
 import ResumeDiagnosisView from '@/views/ResumeDiagnosisView.vue'
+import { projects, say } from '@/content/portfolio'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
-  scrollBehavior: () => ({ top: 0 }),
+  scrollBehavior: (to) => to.hash ? { el: to.hash, top: 20 } : { top: 0 },
   routes: [
+    { path: '/demo', component: () => import('@/views/DemoView.vue'), meta: { title: 'Recorded example', publicPreview: true } },
+    { path: '/projects/:slug', component: () => import('@/views/ProjectView.vue'), meta: { title: 'Project case study', publicPreview: true } },
     { path: '/me', component: PersonaView, meta: { title: 'Tianyu Qi\'s AI Persona', publicPreview: true } },
     { path: '/agent/interview', component: AgentInterviewView, meta: { title: 'Mock interview', agentGuest: true } },
     {
@@ -120,7 +123,8 @@ router.beforeEach(async (to) => {
   }
 
   if (to.matched.some((record) => record.meta.requiresAuth) && !authStore.user) {
-    return { name: 'login', query: { redirect: to.fullPath } }
+    try { await authStore.enterGuest() }
+    catch { return { name: 'login', query: { redirect: to.fullPath } } }
   }
   if (to.meta.guestOnly && authStore.user && !authStore.user.username.startsWith('guest_')) {
     return { name: 'dashboard' }
@@ -131,6 +135,13 @@ router.beforeEach(async (to) => {
 })
 
 function updateTitle() {
+  const current = router.currentRoute.value
+  const project = projects.find(p => p.id === current.params.slug)
+  if (current.path.startsWith('/projects/')) {
+    document.title = `${project?.name ?? say('Project not found', '未找到项目')} · Tianyu Qi`
+    return
+  }
+  if (current.path === '/demo') { document.title = `${say('Recorded example', '预生成示例')} · Tianyu Qi`; return }
   const title = t(router.currentRoute.value.meta.title ?? 'Zhitu CV')
   document.title = title === t('Zhitu CV') ? title : `${title} · ${t('Zhitu CV')}`
 }

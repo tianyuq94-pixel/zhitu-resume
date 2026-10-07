@@ -22,6 +22,7 @@ coverage/
 storage/uploads/
 storage/generated/
 /tmp/
+/output/
 
 # Editors and operating systems
 .idea/

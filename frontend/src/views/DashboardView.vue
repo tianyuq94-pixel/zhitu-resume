@@ -55,7 +55,7 @@ onMounted(() => {
     <div class="hero-card">
       <div class="hero-copy">
         <span class="eyebrow">{{ t("CAREER WORKSPACE") }}</span>
-        <h2>{{ t("Make every job application preparation") }}<br />{{ t("All the more direction") }}</h2>
+        <h2>{{ t("Give every application") }}<br />{{ t("a clearer direction.") }}</h2>
         <p>{{ t("Starting from a real CV, complete role customisation, fit analysis and targeted mock interviews.") }}</p>
         <div class="hero-actions">
           <RouterLink class="primary-button" to="/app/resume">{{ t("Create my CV") }}</RouterLink>

@@ -1,0 +1,185 @@
+{
+  "label": "Recorded demonstration using a fictional applicant and fictional employer. Not a live run, benchmark or real hiring assessment.",
+  "recorded": "2026-10-07",
+  "cv": "Alex Morgan\nalex@example.com\nEducation: Example University, Digital Media, expected graduation 2027.\nProjects\nDeveloped a Vue portfolio with TypeScript. Implemented FastAPI endpoints for CV uploads.\nUsed Python to validate files and extract document text. Tested the application with sample documents.\nSkills: Vue, TypeScript, FastAPI, Python, Git.",
+  "job": "Develop Python applications and FastAPI endpoints. Build Vue and TypeScript interfaces. Validate files and test applications. Familiarity with PostgreSQL is useful.",
+  "job_title": "AI Application Engineer",
+  "company": "Example Company",
+  "match": {
+    "verdict": "recommend",
+    "job_title": "AI Application Engineer",
+    "created_at": "2026-10-07T10:46:31",
+    "match_score": 85,
+    "company_name": "Example Company",
+    "improvements": [
+      "If you have used PostgreSQL in any project, add a bullet point describing the specific tasks you performed, such as designing tables or writing queries.",
+      "Consider adding a brief description of the FastAPI endpoints you implemented, including the HTTP methods and data handled.",
+      "Expand the testing section to mention the types of tests you wrote (e.g., unit, integration) and any testing frameworks used.",
+      "If you have experience with other databases, list them to show transferable skills, but only if you can verify this experience."
+    ],
+    "matched_items": [
+      {
+        "requirement": "Python application development",
+        "resume_evidence": "Used Python to validate files and extract document text."
+      },
+      {
+        "requirement": "FastAPI endpoint development",
+        "resume_evidence": "Implemented FastAPI endpoints for CV uploads."
+      },
+      {
+        "requirement": "Vue interface development",
+        "resume_evidence": "Developed a Vue portfolio with TypeScript."
+      },
+      {
+        "requirement": "TypeScript interface development",
+        "resume_evidence": "Developed a Vue portfolio with TypeScript."
+      },
+      {
+        "requirement": "File validation and application testing",
+        "resume_evidence": "Used Python to validate files and extract document text. Tested the application with sample documents."
+      }
+    ],
+    "missing_items": [
+      {
+        "explanation": "PostgreSQL experience is not evidenced in the CV.",
+        "requirement": "PostgreSQL familiarity"
+      }
+    ],
+    "verdict_reason": "The candidate has demonstrated most of the core requirements through project experience, including Python, FastAPI, Vue, TypeScript, file validation, and testing. Only PostgreSQL familiarity is not evidenced, but the JD describes it as useful rather than essential.",
+    "job_description": "Develop Python applications and FastAPI endpoints. Build Vue and TypeScript interfaces. Validate files and test applications. Familiarity with PostgreSQL is useful.",
+    "key_requirements": [
+      {
+        "jd_evidence": "Develop Python applications and FastAPI endpoints.",
+        "requirement": "Python application development"
+      },
+      {
+        "jd_evidence": "Develop Python applications and FastAPI endpoints.",
+        "requirement": "FastAPI endpoint development"
+      },
+      {
+        "jd_evidence": "Build Vue and TypeScript interfaces.",
+        "requirement": "Vue interface development"
+      },
+      {
+        "jd_evidence": "Build Vue and TypeScript interfaces.",
+        "requirement": "TypeScript interface development"
+      },
+      {
+        "jd_evidence": "Validate files and test applications.",
+        "requirement": "File validation and application testing"
+      },
+      {
+        "jd_evidence": "Familiarity with PostgreSQL is useful.",
+        "requirement": "PostgreSQL familiarity"
+      }
+    ]
+  },
+  "preparation": {
+    "items": [
+      {
+        "focus": "Be ready to describe the FastAPI endpoints you built for CV uploads: HTTP methods, request/response handling, file validation logic and how you extracted document text with Python. Link this to the job requirement to develop Python applications and FastAPI endpoints.",
+        "title": "Explaining your FastAPI endpoints and file validation pipeline",
+        "outline": [
+          "State the endpoint purpose and HTTP method (e.g. POST for upload).",
+          "Describe file validation: type, size, and error handling.",
+          "Explain text extraction using Python libraries and any challenges.",
+          "Summarise how you tested the endpoint with sample documents."
+        ],
+        "question": "Can you walk me through the FastAPI endpoints you implemented for CV uploads? What HTTP methods did you use, how did you validate files, and how did you extract text?"
+      },
+      {
+        "focus": "Prepare to discuss how you built the Vue portfolio with TypeScript, including component structure, type safety and integration with the FastAPI backend. This addresses the requirement to build Vue and TypeScript interfaces.",
+        "title": "Describing your Vue and TypeScript interface work",
+        "outline": [
+          "Outline the Vue component architecture and TypeScript usage.",
+          "Explain API calls to FastAPI endpoints and data handling.",
+          "Mention type definitions for requests and responses.",
+          "Highlight any state management or user feedback for uploads."
+        ],
+        "question": "How did you use TypeScript in your Vue portfolio, and how did the front end communicate with your FastAPI backend?"
+      },
+      {
+        "focus": "Expand on how you tested the application with sample documents. Be ready to specify the types of tests (unit, integration) and any frameworks used, even if informal. This supports the requirement to validate files and test applications.",
+        "title": "Discussing your testing approach and frameworks",
+        "outline": [
+          "Clarify whether tests were manual or automated.",
+          "Name any frameworks or tools used (e.g. pytest, Jest).",
+          "Describe test cases for file validation and text extraction.",
+          "Explain how you handled edge cases and errors."
+        ],
+        "question": "What types of tests did you write for your application, and did you use any testing frameworks?"
+      },
+      {
+        "focus": "The job description lists PostgreSQL as useful, but your CV does not evidence it. Prepare to acknowledge this gap and describe any transferable database knowledge or your plan to learn PostgreSQL. Do not fabricate experience.",
+        "title": "Addressing PostgreSQL familiarity honestly",
+        "outline": [
+          "State clearly whether you have used PostgreSQL or other databases.",
+          "If you have transferable skills, describe them briefly.",
+          "Outline a concrete plan to learn PostgreSQL basics.",
+          "Relate database concepts to your current project (e.g. storing uploads)."
+        ],
+        "question": "The role mentions PostgreSQL familiarity. What experience do you have with databases, and how would you approach learning PostgreSQL?"
+      },
+      {
+        "focus": "Frame your CV upload project as relevant to AI application engineering: document processing, validation and potential integration with AI models. This helps align your experience with the role's broader context.",
+        "title": "Connecting your project to AI application engineering",
+        "outline": [
+          "Summarise the project's data flow from upload to text extraction.",
+          "Suggest how extracted text could feed into an AI model.",
+          "Discuss potential improvements for scalability or accuracy.",
+          "Show awareness of ethical and validation concerns."
+        ],
+        "question": "How does your CV upload project relate to AI application engineering, and how would you extend it to incorporate AI?"
+      }
+    ],
+    "summary": "Your CV already evidences the core requirements for this AI Application Engineer role: Python, FastAPI, Vue, TypeScript, file validation and testing. The main gap is PostgreSQL, which the job description lists as useful rather than essential. Use this plan to deepen your project narratives, prepare for technical questions on your existing work, and address the database gap honestly. Focus on explaining design decisions, testing approaches and how you would extend your current project. Do not claim experience you do not have; instead, show willingness to learn PostgreSQL and related concepts."
+  },
+  "sections": [
+    {
+      "title": "Education",
+      "items": [
+        {
+          "source": "Education: Example University, Digital Media, expected graduation 2027.",
+          "suggestion": null
+        }
+      ]
+    },
+    {
+      "title": "Projects",
+      "items": [
+        {
+          "source": "Developed a Vue portfolio with TypeScript. Implemented FastAPI endpoints for CV uploads.",
+          "suggestion": null
+        },
+        {
+          "source": "Used Python to validate files and extract document text. Tested the application with sample documents.",
+          "suggestion": null
+        }
+      ]
+    },
+    {
+      "title": "Skills",
+      "items": [
+        {
+          "source": "Skills: Vue, TypeScript, FastAPI, Python, Git.",
+          "suggestion": null
+        }
+      ]
+    }
+  ],
+  "trace": [
+    {
+      "tool": "analyze_job"
+    },
+    {
+      "tool": "tailor_resume"
+    },
+    {
+      "tool": "prepare_interview"
+    },
+    {
+      "tool": "finish"
+    }
+  ],
+  "seconds": 10.9
+}

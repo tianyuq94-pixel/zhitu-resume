@@ -45,6 +45,12 @@ export const useAuthStore = defineStore('auth', () => {
     user.value = response.data
   }
 
+  const enterGuest = async () => {
+    const response = await api.post<CurrentUser>('/auth/guest')
+    user.value = response.data
+    initialized.value = true
+  }
+
   const logout = async () => {
     try {
       await api.post('/auth/logout')
@@ -54,6 +60,5 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  return { user, initialized, initialize, register, login, refreshMe, logout }
+  return { user, initialized, initialize, register, login, refreshMe, enterGuest, logout }
 })
-

@@ -22,6 +22,11 @@ body {
   min-height: 100vh;
 }
 
+.agent-example-link{display:inline-block;font-size:13px;line-height:1.7;color:#41693f;border-bottom:1px solid #a7bd98;margin:0 0 10px;padding-bottom:3px}
+.chat-sidebar .topic-button{font-size:12px;color:#45613f}
+.chat-sidebar .topic-heading,.chat-main .chat-header p,.chat-main .composer-tools{color:#5f7057}
+.chat-main .composer-bottom small,.chat-main .chat-composer>p{color:#65715e;font-size:11px;line-height:1.65}
+
 /* The shared language toolbar is part of the layout, not an overlay. */
 .app-shell .sidebar { top: 42px; }
 .persona-shell { height: calc(100dvh - 42px) !important; }

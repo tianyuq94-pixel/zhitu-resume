@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { t, locale } from '@/i18n'
-import { ref, nextTick, onMounted, watch } from 'vue'
+import { computed, ref, nextTick, onMounted, watch } from 'vue'
+import { say } from '@/content/portfolio'
 import { RouterLink } from 'vue-router'
 import { api, getApiErrorMessage } from '@/services/api'
 
@@ -8,7 +9,7 @@ type Message = { role: 'user' | 'assistant'; content: string }
 const profile = ref({ name: 'Tianyu Qi', headline: 'Digital Media Technology · AI Application Practice', welcome: '', links: [] as {label:string;url:string}[] })
 const messages = ref<Message[]>([]), input = ref(''), busy = ref(false), ready = ref(false), error = ref('')
 const thread = ref<HTMLElement|null>(null), showCard = ref(false)
-const topics = ['Introduce yourself first', 'Let\'s talk about the Zhitu CV project you worked on', 'What are your own thoughts in the project?', 'What internship experience do you have?', 'How should we contact you?']
+const topics = computed(() => [say('Tell me about yourself.', '简单介绍一下你自己。'), say('What did you contribute to these projects?', '这些项目中，你做了哪些工作？'), say('How does the Career Agent work?', '求职 Agent 是怎样工作的？'), say('Why do you want to study AI and computing?', '为什么想继续学习 AI 与计算机？'), say('What are the limitations of your projects?', '你的项目有哪些局限？'), say('How can I get in touch with you?', '如何联系你本人？')])
 async function scrollDown() { await nextTick(); thread.value?.scrollTo({top:thread.value.scrollHeight,behavior:'auto'}) }
 async function initialize() {
   error.value = ''
@@ -60,11 +61,11 @@ watch(locale, async () => {
         <div v-for="(message,index) in messages" :key="index" class="chat-row" :class="{outgoing:message.role==='user'}">
           <div class="bubble-avatar">{{ t(message.role==='user'?'You':'TQ') }}</div><div class="bubble-stack"><small>{{ t(message.role==='user'?'You':'Tianyu Qi · AI Persona') }}</small><div class="chat-bubble">{{ t(message.content) }}</div></div>
         </div>
-        <div v-if="busy" class="chat-row"><div class="bubble-avatar">{{ t("TQ") }}</div><div class="typing-bubble" role="status"><i></i><i></i><i></i><span>{{ t("Organising reply") }}</span></div></div>
+        <div v-if="busy" class="chat-row"><div class="bubble-avatar">{{ t("TQ") }}</div><div class="typing-bubble" role="status"><i></i><i></i><i></i><span>{{ t("Preparing a reply") }}</span></div></div>
         <div v-if="error" class="chat-error" role="alert">{{ t(error) }}<button :disabled="busy" @click="ready ? reply() : initialize()">{{ t("Retry") }}</button></div>
         <div v-if="messages.length===1" class="chat-starters"><button v-for="topic in topics.slice(0,3)" :key="topic" :disabled="!ready || busy" @click="send(topic)">{{ t(topic) }}</button></div>
       </div>
-      <form class="chat-composer" @submit.prevent="send()"><div class="composer-tools"><span>{{ t("If there is anything you want to know, just ask me.") }}</span><button type="button" :disabled="busy" @click="clear">{{ t("Chat again") }}</button></div><label class="chat-sr" for="persona-message">{{ t("Enter message") }}</label><textarea id="persona-message" v-model="input" maxlength="1500" rows="3" :placeholder="t('For example: what problems did you encounter during this project?')" :disabled="busy || !ready || messages.at(-1)?.role==='user'" @keydown="onEnter"></textarea><div class="composer-bottom"><small>{{ t("Enter to send · Shift + Enter for a new line") }}　{{ t(input.length) }} / 1500</small><button type="submit" :disabled="!input.trim() || busy || !ready || messages.at(-1)?.role==='user'">{{ t(busy?'Replying…':'Send ↑') }}</button></div><p>{{ t("Messages are used to generate replies, please do not send sensitive information. This page's conversation is not retained after refreshing the page.") }}</p></form>
+      <form class="chat-composer" @submit.prevent="send()"><div class="composer-tools"><span>{{ t("If there is anything you want to know, just ask me.") }}</span><button type="button" :disabled="busy" @click="clear">{{ t("New conversation") }}</button></div><label class="chat-sr" for="persona-message">{{ t("Enter message") }}</label><textarea id="persona-message" v-model="input" maxlength="1500" rows="3" :placeholder="t('For example: what problems did you encounter during this project?')" :disabled="busy || !ready || messages.at(-1)?.role==='user'" @keydown="onEnter"></textarea><div class="composer-bottom"><small>{{ t("Enter to send · Shift + Enter for a new line") }}　{{ t(input.length) }} / 1500</small><button type="submit" :disabled="!input.trim() || busy || !ready || messages.at(-1)?.role==='user'">{{ t(busy?'Replying…':'Send ↑') }}</button></div><p>{{ t("Messages are used to generate replies, please do not send sensitive information. This page's conversation is not retained after refreshing the page.") }}</p></form>
       <RouterLink to="/" class="mobile-home">{{ t("← Back to the three entry points") }}</RouterLink>
     </main>
   </div>

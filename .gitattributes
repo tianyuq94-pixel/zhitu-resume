@@ -1,0 +1,4 @@
+# Generated documents must retain their exact bytes and PDF cross-reference offsets.
+*.pdf binary
+*.docx binary
+*.png binary

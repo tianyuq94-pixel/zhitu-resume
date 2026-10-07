@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { t } from '@/i18n'
+import { say } from '@/content/portfolio'
 import { computed, ref } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 
@@ -63,6 +64,7 @@ const submit = async () => {
         <span class="eyebrow">{{ t(isRegister ? 'CREATE ACCOUNT' : 'SIGN IN') }}</span>
         <h2>{{ t(isRegister ? 'Create account' : 'Log in to account') }}</h2>
         <p>{{ t(isRegister ? 'No phone number needed; register with a username and password.' : 'Enter your username and password to access the workspace.') }}</p>
+        <p><RouterLink to="/demo" class="text-link">{{ say('Just exploring? View the example without an account.', '只是浏览作品？无需账号即可查看示例。') }}</RouterLink></p>
 
         <form @submit.prevent="submit">
           <label>

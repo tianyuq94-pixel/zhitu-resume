@@ -113,6 +113,28 @@ def test_bad_chat_input(client):
     assert browser.post('/api/v1/persona/chat', json={'messages':[{'role':'assistant','content':'hello'}]}).status_code == 400
 
 
+@pytest.mark.parametrize('question', ['How can I reach you?', 'How can I get in touch with you?', 'What is your e-mail address?'])
+def test_natural_english_contact_requests(client, monkeypatch, question):
+    browser, _ = client
+    async def complete(self, system, prompt):
+        import json
+        data = json.loads(prompt)
+        assert data['authorized_contact']
+        return SimpleNamespace(data={'answer':data['authorized_contact'], 'fact_ids':[]})
+    monkeypatch.setattr(persona.DeepSeekClient, 'complete_json', complete)
+    assert 'dvwaefu7708@163.com' in ask(browser, question).json()['answer']
+
+
+def test_study_facts_are_bilingual_and_grounded():
+    import json
+    for filename in ['persona_public.json','persona_public_zh.json']:
+        data = json.loads(persona.PUBLIC_FILE.with_name(filename).read_text(encoding='utf-8'))
+        facts = {f['id']: f for f in data['facts']}
+        assert len(facts) == len(data['facts'])
+        assert {'study_motivation','agent_mechanism','project_reflection','ai_collaboration'} <= facts.keys()
+        assert 'University College London' not in facts['study_motivation']['text']
+
+
 def test_link_reader_is_removed(client):
     browser, _ = client
     assert browser.post('/api/v1/agent/job-link', json={'url':'https://example.com'}).status_code in (404, 405)
