@@ -161,7 +161,7 @@ onMounted(loadProfile)
         <div class="profile-actions"><button class="save-button" type="submit" :disabled="saving">{{ t(saving ? 'Saving…' : continueTarget ? 'Save and continue' : 'Save job profile') }}</button></div>
       </form>
 
-      <form class="profile-card password-card" @submit.prevent="changePassword">
+      <form v-if="authStore.user && !authStore.user.username.startsWith('guest_')" class="profile-card password-card" @submit.prevent="changePassword">
         <div class="card-heading"><div><span>02</span><h3>{{ t("Change password") }}</h3></div><small>{{ t("After changing, other devices will need to sign in again") }}</small></div>
         <div class="profile-form-grid password-grid">
           <label><span>{{ t("Current password") }}</span><input v-model="passwordForm.current_password" type="password" autocomplete="current-password" required /></label>

@@ -15,7 +15,9 @@ export const contribution = [
 
 export const projects = [
   {
-    id: 'career-agent', number: '01', name: 'Career Agent', accent: 'sage', route: '/agent', image: '/portfolio/agent.png',
+    id: 'career-agent', number: '01', name: bi('Career Agent', '求职智能体'), accent: 'sage', route: '/agent', image: bi('/portfolio/agent.png', '/portfolio/agent-zh.png'),
+    purpose: bi('Prepare for a target role', '围绕目标岗位，准备求职'),
+    enter: bi('Start a career task', '开始求职任务'),
     tag: bi('Tool calling · Stateful workflow', '工具调用 · 有状态工作流'),
     summary: bi('A CV and a target role become a guided workflow: role analysis, a tailored CV and an interview preparation plan.', '从简历和目标岗位出发，完成岗位分析、定制简历与面试准备方案。'),
     question: bi('How can an AI application carry a goal through several reliable, reviewable steps?', '如何让 AI 应用通过可靠、可检查的多个步骤完成一个目标？'),
@@ -33,13 +35,15 @@ export const projects = [
     ],
     limits: bi('This is a bounded, model-assisted workflow, not an unrestricted autonomous agent. It does not browse recruitment sites, submit applications or continue running after the browser is closed. Text-based fact checks reduce risk but do not guarantee factual correctness.', '这是有边界的模型辅助工作流，并非无限自主 Agent。它不浏览招聘网站、不提交申请，也不会在关闭浏览器后继续执行。文本事实校验用于降低风险，不能保证内容绝对正确。'),
     evidence: [
-      { label: 'Tool selection', path: 'backend/app/ai/agent.py' },
-      { label: 'State & execution', path: 'backend/app/api/routes/agent.py' },
-      { label: 'Workflow tests', path: 'backend/tests/test_agent.py' },
+      { label: bi('Tool selection', '工具选择'), path: 'backend/app/ai/agent.py' },
+      { label: bi('State & execution', '状态与执行'), path: 'backend/app/api/routes/agent.py' },
+      { label: bi('Workflow tests', '工作流测试'), path: 'backend/tests/test_agent.py' },
     ],
   },
   {
-    id: 'ai-persona', number: '02', name: 'AI Persona', accent: 'sand', route: '/me', image: '/portfolio/persona.png',
+    id: 'ai-persona', number: '02', name: bi('AI Persona', 'AI 分身'), accent: 'sand', route: '/me', image: bi('/portfolio/persona.png', '/portfolio/persona-zh.png'),
+    purpose: bi('Get to know the creator', '通过对话，了解我'),
+    enter: bi('Start a conversation', '开始对话'),
     tag: bi('Grounded conversation · Public facts', '有依据的对话 · 公开资料'),
     summary: bi('A conversational interface to my projects and decisions, grounded in a curated set of public information.', '以经过整理的公开资料为依据，通过对话了解我的项目、经历与决策。'),
     question: bi('How can a personal AI feel conversational without inventing the person behind it?', '如何让个人 AI 自然交流，同时不编造本人经历？'),
@@ -57,13 +61,15 @@ export const projects = [
     ],
     limits: bi('This uses curated context, not a fine-tuned model or a vector-retrieval system. Fact IDs are a traceability check, not proof that every sentence is supported. The persona cannot commit to offers, admissions decisions or availability on my behalf.', '它使用整理后的上下文，并非微调模型或向量检索系统。资料标识用于溯源，不能证明每句话都有充分依据。分身不能代替本人作出录用、申请或时间安排承诺。'),
     evidence: [
-      { label: 'Reply pipeline', path: 'backend/app/api/routes/persona.py' },
-      { label: 'Public facts', path: 'backend/app/persona_public.json' },
-      { label: 'Privacy & response tests', path: 'backend/tests/test_persona.py' },
+      { label: bi('Reply pipeline', '回复流程'), path: 'backend/app/api/routes/persona.py' },
+      { label: bi('Public facts', '公开资料'), path: 'backend/app/persona_public.json' },
+      { label: bi('Privacy & response tests', '隐私与回复测试'), path: 'backend/tests/test_persona.py' },
     ],
   },
   {
-    id: 'zhitu-cv', number: '03', name: 'Zhitu CV', accent: 'blue', route: '/app', image: '/portfolio/toolkit.png',
+    id: 'zhitu-cv', number: '03', name: bi('Zhitu CV', '职途简历'), accent: 'blue', route: '/app', image: bi('/portfolio/toolkit.png', '/portfolio/toolkit-zh.png'),
+    purpose: bi('Use individual CV tools', '按需使用，逐步完善简历'),
+    enter: bi('Open the workspace', '进入简历工作台'),
     tag: bi('Full-stack application · Document workflow', '全栈应用 · 文档工作流'),
     summary: bi('The foundation of the studio: CV parsing, role matching, editable recommendations and finished PDF / Word documents.', '整个工作室的基础：简历解析、岗位匹配、可编辑建议，以及可直接使用的 PDF / Word 文档。'),
     question: bi('How can AI advice become a usable document while preserving the applicant’s real experience?', '如何保留申请者的真实经历，并将 AI 建议转化为可用文档？'),
@@ -81,9 +87,9 @@ export const projects = [
     ],
     limits: bi('Scanned-image OCR is not supported. A match score is a model-assisted heuristic, not a hiring probability. Source checks and human review reduce fabrication risk but do not eliminate it.', '暂不支持扫描图片 OCR。匹配分是模型辅助的启发式评估，不是录用概率。原文校验与人工确认可以降低虚构风险，但不能完全消除。'),
     evidence: [
-      { label: 'Meaningful-edit tests', path: 'backend/tests/test_meaningful_suggestions.py' },
-      { label: 'CV export tests', path: 'backend/tests/test_custom_resume.py' },
-      { label: 'Access & security tests', path: 'backend/tests/test_security.py' },
+      { label: bi('Meaningful-edit tests', '实质修改测试'), path: 'backend/tests/test_meaningful_suggestions.py' },
+      { label: bi('CV export tests', '简历导出测试'), path: 'backend/tests/test_custom_resume.py' },
+      { label: bi('Access & security tests', '访问与安全测试'), path: 'backend/tests/test_security.py' },
     ],
   },
 ]

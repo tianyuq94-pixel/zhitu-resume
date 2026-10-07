@@ -21,6 +21,17 @@ const base=process.env.TEST_BASE||'http://127.0.0.1:5173';
    const actual=await page.evaluate(()=>({lang:document.documentElement.lang,overflow:document.documentElement.scrollWidth>innerWidth+1,images:[...document.querySelectorAll('img')].map(i=>({src:i.src,ok:i.complete&&i.naturalWidth>0})),heading:document.querySelector('h1')?.textContent}));
    assert.equal(actual.lang,language==='en'?'en-GB':'zh-CN');assert.equal(actual.overflow,false,`${route}/${language}/${width} overflow`);assert.ok(actual.images.every(i=>i.ok),JSON.stringify(actual.images));assert.ok(actual.heading);
    assert.ok(await page.locator('img').evaluateAll(images=>images.every(i=>Math.abs(i.clientWidth/i.clientHeight-i.naturalWidth/i.naturalHeight)<0.03)),'Screenshot aspect ratio must be preserved');
+   assert.equal(await page.locator('a[href^="mailto:"]').count(),0,'No non-functional email shortcuts');
+   if(language==='zh'){
+     assert.doesNotMatch(await page.locator('.portfolio-site').innerText(),/Career Agent|AI Persona|Tianyu Qi|Tool selection|Workflow tests|Reply pipeline|Public facts/,'English interface copy in Chinese view');
+     assert.ok(await page.locator('img').evaluateAll(images=>images.every(i=>i.src.includes('-zh.png'))),'Chinese screenshots must follow the selected language');
+   }
+   if(route==='/'){
+     assert.deepEqual(await page.locator('.card-links .portfolio-button').evaluateAll(links=>links.map(a=>a.getAttribute('href'))),['/me','/agent','/app']);
+     if(width===1440)assert.ok(await page.locator('.card-links .portfolio-button').evaluateAll(links=>links.every(a=>a.getBoundingClientRect().bottom<innerHeight)),'Primary actions should be visible without scrolling on desktop');
+     for(const button of await page.locator('.card-links .portfolio-button').all())await button.click({trial:true});
+   }
+   await page.evaluate(()=>window.scrollTo(0,0));
    const name=`${route.replaceAll('/','-')}-${language}-${width}`;await page.screenshot({path:path.join(out,name+'.png'),fullPage:true});reports.push({route,language,width,...actual});
  }
  assert.equal(apiRequests.length,0,'Portfolio/demo should not create a session or call the model');
@@ -30,6 +41,13 @@ const base=process.env.TEST_BASE||'http://127.0.0.1:5173';
  await page.getByRole('tab').nth(0).focus();await page.keyboard.press('End');assert.equal(await page.getByRole('tab').nth(3).getAttribute('aria-selected'),'true');await page.keyboard.press('Home');assert.equal(await page.getByRole('tab').nth(0).getAttribute('aria-selected'),'true');
  for(const file of ['/demo/sample-cv.pdf','/demo/sample-cv.docx','/portfolio/tianyu-qi-project-brief.pdf']) {const response=await context.request.get(base+file);assert.equal(response.status(),200,file);const data=await response.body();assert.ok(data.subarray(0,5).toString().startsWith(file.endsWith('.docx')?'PK':'%PDF'),file);}
  await page.getByRole('button',{name:'中文',exact:true}).click();await page.reload({waitUntil:'networkidle'});assert.equal(await page.locator('html').getAttribute('lang'),'zh-CN');
+ for(let i=0;i<4;i++){
+   await page.getByRole('tab').nth(i).click();
+   const copy=await page.getByRole('tabpanel').innerText();
+   assert.doesNotMatch(copy,/Education:|Developed a|The candidate|Your CV already|Example Company|AI Application Engineer/,'Recorded example needs translated body content');
+   assert.match(copy,/[\u3400-\u9fff]/);
+ }
+ assert.equal(await page.locator('.demo-language-note').innerText(),'当前正文为同一次英文生成记录的中文译文，评分、缺口及是否修改均保持一致。下载文件保留原始英文，不是另一次生成结果。');
  await page.goto(base+'/projects/not-a-project',{waitUntil:'networkidle'});assert.match(await page.locator('h1').innerText(),/未找到项目/);
  await page.setViewportSize({width:1440,height:1000});await page.goto(base+'/',{waitUntil:'networkidle'});await page.locator('header a[href="/#projects"]').click();await page.waitForFunction(()=>document.querySelector('#projects').getBoundingClientRect().top<80);
  // Static example fetch failure is recoverable without involving authentication.

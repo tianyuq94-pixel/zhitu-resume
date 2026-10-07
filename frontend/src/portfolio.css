@@ -9,3 +9,7 @@
 .portfolio-site>main{max-width:none;margin:0;padding:0}
 .portfolio-site .portfolio-heading h2{color:var(--ink)}
 .project-hero img{height:auto}
+.portfolio-header nav>a:first-child{display:inline-flex}
+.portfolio-site .skip-link{top:8px;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;padding:0}
+.portfolio-site .skip-link:focus{width:auto;height:auto;clip-path:none;padding:12px}
+html[lang="zh-CN"] .portfolio-site h1,html[lang="zh-CN"] .portfolio-site h2{letter-spacing:0}

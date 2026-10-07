@@ -1,0 +1,66 @@
+{
+  "cv": "亚历克斯·摩根\nalex@example.com\n教育背景：示例大学，数字媒体专业，预计 2027 年毕业。\n项目经历\n使用 Vue 和 TypeScript 开发作品集网站。实现用于简历上传的 FastAPI 接口。\n使用 Python 校验文件并提取文档文本，使用示例文档测试应用。\n技能：Vue、TypeScript、FastAPI、Python、Git。",
+  "job": "开发 Python 应用和 FastAPI 接口，使用 Vue 与 TypeScript 构建界面，完成文件校验和应用测试。熟悉 PostgreSQL 者更佳。",
+  "job_title": "AI 应用工程师",
+  "company": "示例公司",
+  "match": {
+    "verdict_reason": "申请者的项目经历体现了大部分核心要求，包括 Python、FastAPI、Vue、TypeScript、文件校验与测试。简历仅未体现 PostgreSQL 经验，而岗位将其列为加分项，并非必要条件。",
+    "matched_items": [
+      {"requirement":"Python 应用开发","resume_evidence":"使用 Python 校验文件并提取文档文本。"},
+      {"requirement":"FastAPI 接口开发","resume_evidence":"实现用于简历上传的 FastAPI 接口。"},
+      {"requirement":"Vue 界面开发","resume_evidence":"使用 Vue 和 TypeScript 开发作品集网站。"},
+      {"requirement":"TypeScript 界面开发","resume_evidence":"使用 Vue 和 TypeScript 开发作品集网站。"},
+      {"requirement":"文件校验与应用测试","resume_evidence":"使用 Python 校验文件并提取文档文本，使用示例文档测试应用。"}
+    ],
+    "missing_items": [{"requirement":"熟悉 PostgreSQL","explanation":"简历尚未提供 PostgreSQL 使用经验的证据。"}],
+    "improvements": [
+      "如果你在项目中使用过 PostgreSQL，可补充具体任务，例如设计数据表或编写查询。",
+      "可简要说明已实现的 FastAPI 接口，包括请求方法和处理的数据。",
+      "可补充测试类型（如单元测试、集成测试）以及实际使用的测试框架。",
+      "如有其他数据库的使用经验，可列出可迁移技能，但只能补充可以核实的真实经历。"
+    ]
+  },
+  "sections": [
+    {"title":"教育背景","items":[{"source":"教育背景：示例大学，数字媒体专业，预计 2027 年毕业。","suggestion":null}]},
+    {"title":"项目经历","items":[
+      {"source":"使用 Vue 和 TypeScript 开发作品集网站。实现用于简历上传的 FastAPI 接口。","suggestion":null},
+      {"source":"使用 Python 校验文件并提取文档文本，使用示例文档测试应用。","suggestion":null}
+    ]},
+    {"title":"技能","items":[{"source":"技能：Vue、TypeScript、FastAPI、Python、Git。","suggestion":null}]}
+  ],
+  "preparation": {
+    "summary": "你的简历已体现 AI 应用工程师岗位的核心要求：Python、FastAPI、Vue、TypeScript、文件校验与测试。主要缺口是 PostgreSQL，岗位将其列为加分项而非必要条件。可按照这份方案深入梳理项目叙述，准备关于现有工作的技术问题，并如实说明数据库方面的不足。重点解释设计决策、测试方式及项目扩展思路。不要声称拥有尚未具备的经验，而应展示学习 PostgreSQL 和相关概念的意愿。",
+    "items": [
+      {
+        "title":"讲清 FastAPI 接口与文件校验流程",
+        "focus":"准备说明简历上传接口的请求方法、请求与响应处理、文件校验逻辑，以及使用 Python 提取文档文本的方式，并关联岗位对 Python 应用和 FastAPI 接口开发的要求。",
+        "question":"请介绍你为简历上传实现的 FastAPI 接口。用了哪些请求方法？如何校验文件并提取文本？",
+        "outline":["说明接口用途与请求方法，例如使用 POST 上传。","介绍文件类型、大小校验及异常处理。","说明用 Python 库提取文本的方式和遇到的问题。","总结如何用示例文档测试接口。"]
+      },
+      {
+        "title":"说明 Vue 与 TypeScript 界面开发经历",
+        "focus":"准备介绍作品集网站的组件结构、类型安全，以及与 FastAPI 后端的对接，对应岗位的界面开发要求。",
+        "question":"你在 Vue 作品集项目中如何使用 TypeScript？前端如何与 FastAPI 后端通信？",
+        "outline":["概述 Vue 组件结构与 TypeScript 的使用方式。","解释接口调用与数据处理流程。","说明请求和响应的类型定义。","介绍实际采用的状态管理或上传反馈方式。"]
+      },
+      {
+        "title":"梳理测试方法与使用的工具",
+        "focus":"展开说明如何用示例文档测试应用。准备介绍实际做过的单元测试、集成测试等测试类型和使用的框架，即使测试方式较为非正式，也要如实说明。",
+        "question":"你为应用编写了哪些类型的测试？是否使用了测试框架？",
+        "outline":["说明测试是手动完成还是自动执行。","列出实际用过的框架或工具，例如 pytest、Jest。","描述文件校验与文本提取的测试用例。","解释如何处理边界情况和错误。"]
+      },
+      {
+        "title":"如实说明 PostgreSQL 经验缺口",
+        "focus":"岗位提到熟悉 PostgreSQL 者更佳，但简历未提供相关证据。应承认不足，介绍可迁移的数据库知识或学习计划，不编造经历。",
+        "question":"岗位提到 PostgreSQL。你有怎样的数据库使用经验？会如何着手学习 PostgreSQL？",
+        "outline":["明确说明是否使用过 PostgreSQL 或其他数据库。","如果有可迁移技能，简要介绍。","提出具体的 PostgreSQL 基础学习计划。","将数据库概念与现有项目联系起来，例如保存上传记录。"]
+      },
+      {
+        "title":"把项目与 AI 应用工程联系起来",
+        "focus":"从文档处理、校验及未来接入 AI 模型等角度，说明简历上传项目与 AI 应用工程的关联，帮助面试官理解经历与岗位的联系。",
+        "question":"你的简历上传项目与 AI 应用工程有什么联系？你会如何扩展它以接入 AI？",
+        "outline":["概述从上传到文本提取的数据流。","说明提取后的文本可以如何输入 AI 模型。","讨论扩展性或准确性方面的潜在改进。","体现对伦理风险和校验问题的认识。"]
+      }
+    ]
+  }
+}

@@ -11,8 +11,8 @@ const tabs = ['Role analysis', 'Tailored CV', 'Interview preparation']
 const examples = ['AI Application Engineer', 'Product Manager', 'Front-end Developer']
 const paperPreview = ref(false)
 const missingPrompts = computed(() => (custom.value?.missing_information_warnings || []).map(text => text
-  .replace(/主简历中未明确体现|主简历中未体现/g, 'You can add')
-  .replace(/[，,；;]?不能直接添加[。.]?/g, ': If you have relevant practical experience, please add the specific tasks, your contribution and real results; if not, you can skip this.')))
+  .replace(/主简历中未明确体现|主简历中未体现/g, say('You can add', '可补充'))
+  .replace(/[，,；;]?不能直接添加[。.]?/g, say(': If you have relevant practical experience, add your tasks, contribution and real results; otherwise, skip this.', '：如有相关实践，请补充具体任务、你的贡献和真实结果；没有可跳过。'))))
 const factCount = computed(() => [facts.value.about, facts.value.skills, facts.value.experiences].filter(Boolean).length)
 const suggestionSections = computed(() => (custom.value?.sections || []).map(s => ({ ...s, items: s.items.filter(i => i.has_suggestion) })).filter(s => s.items.length))
 const suggestionCount = computed(() => suggestionSections.value.reduce((n, s) => n + s.items.length, 0))
@@ -45,7 +45,7 @@ const resultReady = computed(() => tab.value === 'Role analysis' ? !!run.value?.
             <h1>{{ t("Your next step.") }}<br /><span>{{ t("Which role are you aiming for?") }}</span></h1>
             <p>{{ t("Bring your experience and a target role.") }}<br />{{ t("Get a clearer match, a tailored CV and an interview preparation plan.") }}</p>
             <a href="/demo" class="agent-example-link">{{ say('Just exploring? View a complete example — no upload needed.', '先看看效果？查看完整示例，无需上传资料。') }} ↗</a>
-            <div class="agent-suggestions"><button v-for="(example, index) in examples" :key="example" @click="jobTitle = example"><span>0{{ t(index + 1) }}</span>{{ t(example) }}<b>↗</b></button></div>
+            <div class="agent-suggestions"><button v-for="(example, index) in examples" :key="example" @click="jobTitle = t(example)"><span>0{{ t(index + 1) }}</span>{{ t(example) }}<b>↗</b></button></div>
           </div>
           <div v-else-if="run" class="agent-thread">
             <div class="agent-task-label">{{ t("This target") }} <span>{{ t(statusLabel) }}</span></div>

@@ -26,13 +26,17 @@ The example deliberately contains a job requirement, PostgreSQL, without matchin
 
 A first capture attempt stopped at a failed preparation step. A subsequent execution completed. This demonstrates why failures and retries need explicit handling; it is not evidence of a quantified reliability rate. The sample timing, if present in the raw record, is one local run and must not be treated as a speed guarantee.
 
-The public example is static and labelled read-only. It does not invoke the model, create a guest session or write to a visitor's CV. The saved output remains English when interface labels are switched to Chinese, preserving the recorded evidence.
+The public example is static and labelled read-only. It does not invoke the model, create a guest session or write to a visitor's CV. Chinese mode displays a curated translation in `frontend/src/content/demo-zh.json`, explicitly labelled as a translation of the same run. Scores and the no-rewrite outcome are preserved; downloadable documents and the original JSON remain in English.
 
 ## Browser checks
 
 The portfolio review checks fresh-visitor routes, English / Chinese switching, responsive layouts, sample tabs, error and retry handling, local resource links and download signatures. The live toolkit should create a guest session without a login form; if its service is unavailable, the login screen retains a link to the independent recorded example.
 
 Run `node scripts/check_portfolio.cjs` with Playwright installed and a local frontend running. `TEST_BASE` selects the site; `PLAYWRIGHT_MODULE` and `BROWSER_EXECUTABLE` can point to an existing runtime. The suite exercises five public pages in two languages at three viewport widths (30 combinations), keyboard-accessible sample tabs, language persistence, download signatures and fetch retry. Authentication service responses are mocked for repeatable guest-entry / outage checks; the public pages are also asserted to make zero API requests. This is not a load or penetration test.
+
+The interface translation audit can be run with `node scripts/check_localization.cjs`. It checks literal UI strings against the Chinese dictionary. Browser checks also verify Chinese project names, screenshots and all four translated example panels, plus the three primary homepage destinations and removal of email shortcuts. Technical names such as Python and PDF remain unchanged; user-authored content and existing AI conversations are not silently translated.
+
+Run `node scripts/check_experience.cjs` for 36 additional checks across nine application pages, two languages and desktop/mobile viewports. Isolated API fixtures let these tests exercise navigation, the CV dialog, locale-correct job suggestions, profile cards and guest versus registered-user password controls without modifying live data or calling a model. The suite also checks that the translated saved example preserves the original evidence counts and edit decisions. These are interface checks, not full end-to-end AI evaluations.
 
 ## What these checks do not establish
 

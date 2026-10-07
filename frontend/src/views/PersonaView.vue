@@ -9,7 +9,7 @@ type Message = { role: 'user' | 'assistant'; content: string }
 const profile = ref({ name: 'Tianyu Qi', headline: 'Digital Media Technology · AI Application Practice', welcome: '', links: [] as {label:string;url:string}[] })
 const messages = ref<Message[]>([]), input = ref(''), busy = ref(false), ready = ref(false), error = ref('')
 const thread = ref<HTMLElement|null>(null), showCard = ref(false)
-const topics = computed(() => [say('Tell me about yourself.', '简单介绍一下你自己。'), say('What did you contribute to these projects?', '这些项目中，你做了哪些工作？'), say('How does the Career Agent work?', '求职 Agent 是怎样工作的？'), say('Why do you want to study AI and computing?', '为什么想继续学习 AI 与计算机？'), say('What are the limitations of your projects?', '你的项目有哪些局限？'), say('How can I get in touch with you?', '如何联系你本人？')])
+const topics = computed(() => [say('Tell me about yourself.', '简单介绍一下你自己。'), say('What did you contribute to these projects?', '这些项目中，你做了哪些工作？'), say('How does the Career Agent work?', '求职智能体是怎样工作的？'), say('Why do you want to study AI and computing?', '为什么想继续学习 AI 与计算机？'), say('What are the limitations of your projects?', '你的项目有哪些局限？'), say('What would you improve next?', '接下来你想改进什么？')])
 async function scrollDown() { await nextTick(); thread.value?.scrollTo({top:thread.value.scrollHeight,behavior:'auto'}) }
 async function initialize() {
   error.value = ''
